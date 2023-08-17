@@ -1,0 +1,225 @@
+
+
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+
+<section class="section-content padding-y bg">
+    <div class="container">
+    
+    
+    
+    <!-- ============================ COMPONENT 2 ================================= -->
+    <div class="row">
+            <main class="col-md-8">
+    
+    <article class="card mb-4">
+    <div class="card-body">
+        <h4 class="card-title mb-4">Review cart</h4>
+        <div class="row">
+            {% for cart_item in cart_items %}
+            <div class="col-md-6">
+                <figure class="itemside  mb-4">
+                    <div class="aside"><img src="{{cart_item.product.product_image.first.image.url}}" class="border img-sm"></div>
+                    <figcaption class="info">
+                        <p>{{cart_item.product.product_name}} {{cart_item.variant.ram}} <br>{{cart_item.variant.storage}} </p>
+                        <span class="text-muted">{{cart_item.quantity}}x = &#8377;{{cart_item.get_total_price}} </span>
+                    </figcaption>
+                </figure>
+            </div> <!-- col.// -->
+            {% endfor %}
+        </div> <!-- row.// -->
+    </div> <!-- card-body.// -->
+    </article> <!-- card.// -->
+    
+
+
+    <article class="card mb-4">
+    <div class="card-body">
+        <h4 class="card-title mb-4">Delivery Address</h4>        
+        
+            <strong>{{address.name}}</strong><br>
+            {{address.address}}, {{address.place}}, {{address.city}}, {{address.state}}-{{address.pincode}} <br> {{address.phone}} {% if address.alternate_number %} ,{{address.alternate_number}}{% endif %}
+          
+          
+
+
+    </div> <!-- card-body.// -->
+    </article> <!-- card.// -->
+    
+    
+    
+    
+    {% comment %} <article class="accordion" id="accordion_pay">
+        <div class="card">
+            <header class="card-header">
+                <img src="./images/misc/payment-paypal.png" class="float-right" height="24"> 
+                <label class="form-check" data-toggle="collapse" data-target="#pay_paynet" aria-expanded="true">
+                    <input class="form-check-input" name="payment-option" checked="" type="radio" value="option2">
+                    <h6 class="form-check-label"> 
+                        Paypal 
+                    </h6>
+                </label>
+            </header>
+            <div id="pay_paynet" class="collapse show" data-parent="#accordion_pay" style="">
+            <div class="card-body">
+                <p class="text-center text-muted">Connect your PayPal account and use it to pay your bills. You'll be redirected to PayPal to add your billing information.</p>
+                <p class="text-center">
+                    <a href="#"><img src="./images/misc/btn-paypal.png" height="32"></a>
+                    <br><br>
+                </p>
+            </div> <!-- card body .// -->
+            </div> <!-- collapse .// -->
+        </div> <!-- card.// -->
+        <div class="card">
+        <header class="card-header">
+            <img src="./images/misc/payment-card.png" class="float-right" height="24">  
+            <label class="form-check collapsed" data-toggle="collapse" data-target="#pay_paym" aria-expanded="false">
+                <input class="form-check-input" name="payment-option" type="radio" value="option2">
+                <h6 class="form-check-label"> Cash on Delivery </h6>
+            </label>
+        </header>
+        <div id="pay_payme" class="collapse" data-parent="#accordion_pay" style="">
+            <div class="card-body">
+                <p class="alert alert-success">Some information or instruction</p>
+                {% comment %} <form class="form-inline">
+                    <input type="text" class="form-control mr-2" placeholder="xxxx-xxxx-xxxx-xxxx" name="">
+                    <input type="text" class="form-control mr-2" style="width: 100px" placeholder="dd/yy" name="">
+                    <input type="number" maxlength="3" class="form-control mr-2" style="width: 100px" placeholder="cvc" name="">
+                    <button class="btn btn btn-success">Button</button>
+                </form> 
+            </div> <!-- card body .// -->
+        </div> <!-- collapse .// -->
+        </div> <!-- card.// -->
+        
+    </article>  {% endcomment %}
+    
+    <!-- accordion end.// -->
+      
+            </main> <!-- col.// -->
+            <aside class="col-md-4">
+                <div class="card">
+            <div class="card-body">
+                <dl class="dlist-align">
+                  <dt>Total price:</dt>
+                  <dd class="text-right">&#8377; {{ total_price }} </dd>
+                </dl>
+                <dl class="dlist-align">
+                    <dt>Coupon:</dt>
+                    <dd class="text-right">- &#8377; {{coupon_price}} </dd>
+                  </dl>
+                <dl class="dlist-align">
+                  <dt>Discount:</dt>
+                  <dd class="text-right">- &#8377; {{discount}} </dd>
+                </dl>
+                <dl class="dlist-align">
+                  <dt>Total:</dt>
+                  <dd class="text-right text-dark b"><strong>&#8377; {{total}} </strong></dd>
+                </dl>
+                <hr>
+                <p class="text-center mb-3">
+                    <img src="./images/misc/payments.png" height="26">
+                </p>
+                <button  id="rzp-button1" class="btn btn-primary btn-block">Make payment</button>
+
+            </div> <!-- card-body.// -->
+            </div> <!-- card.// -->
+            </aside> <!-- col.// -->
+        </div> <!-- row.// -->
+    
+    <!-- ============================ COMPONENT 2 END//  ================================= -->
+    
+    
+    
+    
+    </div> <!-- container .//  -->
+    </section>
+
+<!-- ============================ add address ================================= -->
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+
+    function getCSRFToken() {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.startsWith('csrftoken=')) {
+                return cookie.substring('csrftoken='.length, cookie.length);
+            }
+        }
+        return null;
+    }
+    
+
+
+    var csrfToken = getCSRFToken();
+    var url = "{% url 'payment' %}";
+    var OrdID = "{{order.order_number}}";
+    var redirct_url = "{% url 'order_complete' %}";
+    var options = {
+        "key": "rzp_test_Afaj2MSBklWAwP", // Enter the Key ID generated from the Dashboard
+        "amount": "{{payment.amount}}", // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+        "currency": "INR",
+        "name": "Ecomme", //your business name
+        "description": "Test Transaction",
+        "image": "https://example.com/your_logo",
+        "order_id": "{{payment.id}}", //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+        "handler": function (response){
+            console.log(response)
+            sendData(response);
+        },
+        "prefill": { //We recommend using the prefill parameter to auto-fill customer's contact information, especially their phone number
+            "name": "Gaurav Kumar", //your customer's name
+            "email": "gaurav.kumar@example.com", 
+            "contact": "9000090000"  //Provide the customer's phone number for better conversion rates 
+        },
+        "notes": {
+            "address": "Razorpay Corporate Office"
+        },
+        "theme": {
+            "color": "#3399cc"
+        }
+    };
+    var rzp1 = new Razorpay(options);
+    rzp1.on('payment.failed', function (response){
+            alert(response.error.code);
+            alert(response.error.description);
+            alert(response.error.source);
+            alert(response.error.step);
+            alert(response.error.reason);
+            alert(response.error.metadata.order_id);
+            alert(response.error.metadata.payment_id);
+    });
+    document.getElementById('rzp-button1').onclick = function(e){
+        rzp1.open();
+        e.preventDefault();
+    }
+
+    function sendData(response) {
+        fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken
+            },
+            body: JSON.stringify({
+                "PayID": response.razorpay_payment_id,
+                "OrdID": OrdID
+            })
+        })
+        .then((response) => response.json())
+        .then((data) => {
+            // Handle the server response if needed
+            window.location.href = redirct_url +'?order_number='+data.order_number+'&payment_id='+data.transID;
+        })
+        .catch(error => {
+            console.error('Error sending data:', error);
+        });
+    }
+
+</script>
+
+
+    {% endblock %}

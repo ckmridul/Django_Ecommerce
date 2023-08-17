@@ -1,0 +1,223 @@
+
+
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+
+<section class="section-content padding-y bg">
+    <div class="container">
+    
+    
+    
+    <!-- ============================ COMPONENT 2 ================================= -->
+    <div class="row">
+            <main class="col-md-8">
+    
+    <article class="card mb-4">
+    <div class="card-body">
+        <h4 class="card-title mb-4">Review cart</h4>
+        <div class="row">
+            {% for cart_item in cart_items %}
+            <div class="col-md-6">
+                <figure class="itemside  mb-4">
+                    <div class="aside"><img src="{{cart_item.product.product_image.first.image.url}}" class="border img-sm"></div>
+                    <figcaption class="info">
+                        <p>{{cart_item.product.product_name}} {{cart_item.variant.ram}} <br>{{cart_item.variant.storage}} </p>
+                        <span class="text-muted">{{cart_item.quantity}}x = &#8377;{{cart_item.get_total_price}} </span>
+                    </figcaption>
+                </figure>
+            </div> <!-- col.// -->
+            {% endfor %}
+        </div> <!-- row.// -->
+    </div> <!-- card-body.// -->
+    </article> <!-- card.// -->
+    
+    <form action="{% url 'place_order' %}" method="post" >
+        {% csrf_token %}
+
+    <article class="card mb-4">
+    <div class="card-body">
+        <h4 class="card-title mb-4">Delivery Address</h4>
+       
+
+        {% for address in addresses %}
+        <label for="male">
+            <input type="radio"  name="address" value={{address.uid}} required>
+            <strong>{{address.name}}</strong><br>
+            {{address.address}}, {{address.place}}, {{address.city}}, {{address.state}}-{{address.pincode}} <br> {{address.phone}} {% if address.alternate_number %} ,{{address.alternate_number}}{% endif %}
+          </label>
+          
+            {% endfor %}
+            <br><br><a href="#" class="btn btn-primary" data-toggle="modal" data-target="#addAddress">  <i class="fas fa-plus"></i>
+                Add Address </a>
+
+         
+
+
+    </div> <!-- card-body.// -->
+    </article> <!-- card.// -->
+    
+    
+    
+    
+    {% comment %} <article class="accordion" id="accordion_pay">
+        <div class="card">
+            <header class="card-header">
+                <img src="./images/misc/payment-paypal.png" class="float-right" height="24"> 
+                <label class="form-check" data-toggle="collapse" data-target="#pay_paynet" aria-expanded="true">
+                    <input class="form-check-input" name="payment-option" checked="" type="radio" value="option2">
+                    <h6 class="form-check-label"> 
+                        Paypal 
+                    </h6>
+                </label>
+            </header>
+            <div id="pay_paynet" class="collapse show" data-parent="#accordion_pay" style="">
+            <div class="card-body">
+                <p class="text-center text-muted">Connect your PayPal account and use it to pay your bills. You'll be redirected to PayPal to add your billing information.</p>
+                <p class="text-center">
+                    <a href="#"><img src="./images/misc/btn-paypal.png" height="32"></a>
+                    <br><br>
+                </p>
+            </div> <!-- card body .// -->
+            </div> <!-- collapse .// -->
+        </div> <!-- card.// -->
+        <div class="card">
+        <header class="card-header">
+            <img src="./images/misc/payment-card.png" class="float-right" height="24">  
+            <label class="form-check collapsed" data-toggle="collapse" data-target="#pay_paym" aria-expanded="false">
+                <input class="form-check-input" name="payment-option" type="radio" value="option2">
+                <h6 class="form-check-label"> Cash on Delivery </h6>
+            </label>
+        </header>
+        <div id="pay_payme" class="collapse" data-parent="#accordion_pay" style="">
+            <div class="card-body">
+                <p class="alert alert-success">Some information or instruction</p>
+                {% comment %} <form class="form-inline">
+                    <input type="text" class="form-control mr-2" placeholder="xxxx-xxxx-xxxx-xxxx" name="">
+                    <input type="text" class="form-control mr-2" style="width: 100px" placeholder="dd/yy" name="">
+                    <input type="number" maxlength="3" class="form-control mr-2" style="width: 100px" placeholder="cvc" name="">
+                    <button class="btn btn btn-success">Button</button>
+                </form> 
+            </div> <!-- card body .// -->
+        </div> <!-- collapse .// -->
+        </div> <!-- card.// -->
+        
+    </article>  {% endcomment %}
+    <!-- accordion end.// -->
+      
+            </main> <!-- col.// -->
+            <aside class="col-md-4">
+                <div class="card">
+            <div class="card-body">
+                <dl class="dlist-align">
+                  <dt>Total price:</dt>
+                  <dd class="text-right">&#8377; {{ total_price }} </dd>
+                </dl>
+                <dl class="dlist-align">
+                  <dt>Coupon:</dt>
+                  <dd class="text-right">- &#8377; {{coupon_price}} </dd>
+                </dl>
+                <dl class="dlist-align">
+                    <dt>Discount:</dt>
+                    <dd class="text-right">- &#8377; {{discount}} </dd>
+                  </dl>
+                <dl class="dlist-align">
+                  <dt>Total:</dt>
+                  <dd class="text-right text-dark b"><strong>&#8377; {{total}} </strong></dd>
+                </dl>
+                <hr>
+                <p class="text-center mb-3">
+                    <img src="./images/misc/payments.png" height="26">
+                </p>
+                <button type="submit" class="btn btn-primary btn-block">Place Order</button>
+
+        </form>
+            </div> <!-- card-body.// -->
+            </div> <!-- card.// -->
+            </aside> <!-- col.// -->
+        </div> <!-- row.// -->
+    
+    <!-- ============================ COMPONENT 2 END//  ================================= -->
+    
+    
+    
+    
+    </div> <!-- container .//  -->
+    </section>
+
+<!-- ============================ add address ================================= -->
+
+
+ 
+
+         <!-- Modal -->
+        <div class="modal fade" id="addAddress" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Add Address</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                </div>
+                <div class="modal-body">
+                    
+                           
+                            <form action="{% url 'add_address' %}" method="post" >
+                                    {% csrf_token %}
+                        
+                                <div class="row">
+                                        
+                                        <div class="form-group col-sm-6">
+                                            <label>Name</label>
+                                            <input type="text" placeholder="Name" name="name" class="form-control" required>
+                                        </div>
+                                        <div class="form-group col-sm-6">
+                                            <label>Phone</label>
+                                            <input type="text" placeholder="10-digit mobile number" name="phone" class="form-control" required>
+                                        </div>
+                                        <div class="form-group col-sm-6">
+                                            <label>Pincode</label>
+                                            <input type="text" placeholder="Pincode" name="pincode" class="form-control" required>
+                                        </div>
+                                        <div class="form-group col-sm-6">
+                                            <label>Place</label>
+                                            <input type="text" placeholder="Place" name="place" class="form-control">
+                                        </div>
+                                        <div class="form-group col-sm-12">
+                                            <label>Address</label>
+                                            <input type="text" placeholder="Address (Area and Street)" name="address" class="form-control">
+                                        </div>
+                                        <div class="form-group col-sm-6">
+                                            <label>City/District</label>
+                                            <input type="text" placeholder="City/District" name="city" class="form-control">
+                                        </div>
+                                        <div class="form-group col-sm-6">
+                                            <label>State</label>
+                                            <input type="text" placeholder="State" name="state" class="form-control">
+                                        </div>
+                                        <div class="form-group col-sm-6">
+                                            <label>Landmark</label>
+                                            <input type="text" placeholder="Landmark (Optional)" name="landmark" class="form-control">
+                                        </div>
+                                        <div class="form-group col-sm-6">
+                                            <label>Alternate Phone</label>
+                                            <input type="text" placeholder="Alternate Phone(Optional)" name="alternate_number" class="form-control">
+                                        </div>
+                                </div> <!-- row.// -->	
+                           
+                      
+                        
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Add</button>
+                </div>
+        </form>
+            </div>
+            </div>
+        </div>
+
+
+    {% endblock %}

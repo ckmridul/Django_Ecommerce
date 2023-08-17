@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<section class="section-pagetop bg">
+    <div class="container">
+        <h2 class="title-page">My account</h2>
+    </div> <!-- container //  -->
+    </section>
+<section class="section-content padding-y">
+    <div class="container">
+        <div class="row">
+            <div class="col-3">
+            <div class="list-group" id="list-tab" role="tablist">
+                <a class="list-group-item list-group-item-action"href="{% url 'userprofile' %}" role="tab">Profile</a>
+                <a class="list-group-item list-group-item-action active" href="{% url 'myOrder' %}">My Order</a>
+                <a class="list-group-item list-group-item-action " href="{% url 'wishlist' %}" role="tab" aria-controls="messages">Wish list</a>
+            </div>
+            </div>
+            <div class="col-8">
+            <div class="tab-content" >
+
+                {% if request.user.orders.all %}
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th scope="col"># OrdID</th>
+                                        <th scope="col">Total Price</th>
+                                        <th scope="col">Method</th>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Satus</th>
+            
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in request.user.orders.all %}
+                                    
+                                    <tr>
+                                        <td><a href={% url 'view_user_order' order.uid %}> {{order.order_number}}</a></td>
+                                        <td>{{order.order_total}}</td>
+                                        <td>{{order.payment.payment_method}}</td>
+                                        <td>{{order.created_at}}</td>
+                                        
+                                        
+                                        <td> 
+                                            {{order.status}}
+                                       
+                                     </td>
+                                
+                                    </tr>
+                                
+                                    {% endfor %}
+            
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- table-responsive //end -->
+                    </div>
+
+                    {% else %}
+                    <h3>No Order!<h3>
+                    {% endif %}
+
+
+
+    
+    
+    {% endblock %}

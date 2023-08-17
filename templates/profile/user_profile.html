@@ -1,0 +1,327 @@
+
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<section class="section-pagetop bg">
+    <div class="container">
+        <h2 class="title-page">My account</h2>
+    </div> <!-- container //  -->
+    </section>
+<section class="section-content padding-y">
+    <div class="container">
+        
+        <div class="row">
+            <div class="col-3">
+            <div class="list-group" id="list-tab" role="tablist">
+                <a class="list-group-item list-group-item-action active"href="{% url 'userprofile' %}" >Profile</a>
+                <a class="list-group-item list-group-item-action" href="{% url 'myOrder' %}">My Order</a>
+                <a class="list-group-item list-group-item-action" href="{% url 'wishlist' %}" >Wish list</a>
+            </div>
+            </div>
+            <div class="col-8">
+            <div class="tab-content" id="nav-tabContent">
+                <div class="tab-pane fade show active" id="list-home" role="tabpanel" aria-labelledby="list-home-list">
+                    {% include "alert.html" %}
+
+{% comment %}+=========================== my Profile ========================={% endcomment %}
+                   
+                    <div class="card-body">
+				
+                        <figure class="icontext">
+                                <div class="icon">
+                                    <img class="rounded-circle img-sm border" src="/media/{{request.user.profile_image}}">
+                                </div>
+                                <div class="text">
+                                    <strong> {{request.user.first_name}} {{request.user.last_name}}</strong> <br> 
+                                    {{request.user.email}}  <br> 
+                                    {{request.user.phone}} <br> 
+                                    
+     {% comment %}+=========================== start model ========================={% endcomment %}
+                                    <a href="#" data-toggle="modal" data-target="#exampleModal">Edit</a><br>
+                                    <a href="#" data-toggle="modal" data-target="#change_password">Change password</a><br>
+{% comment %}+=========================== change password model ========================={% endcomment %}
+                                    <div class="modal fade" id="change_password" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+                                        <div class="modal-dialog" role="document">
+                                          <div class="modal-content">
+                                            <div class="modal-header">
+                                              <h5 class="modal-title" id="exampleModalLongTitle">Change password</h5>
+                                              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                              </button>
+                                            </div>
+                                            <div class="modal-body">
+                                            
+
+                                                <form action="{% url 'change_password' %}" method="post" >
+                                                    {% csrf_token %}
+                                                    
+                        
+                                                            <div class="form-group">
+                                                                <label >Old password</label>
+                                                                <input type="password" id="first_name" class="form-control" placeholder="old password" name="old_password" required>
+                                                            </div>
+                                                   
+                                                            <div class="form-group">
+                                                                <label >New Password</label>
+                                                                <input type="password"  class="form-control"  placeholder="New Password" name="password" required>
+                                                            </div>
+                                                    
+                                                            <div class="form-group">
+                                                                <label >Conform password</label>
+                                                                <input  class="form-control" placeholder="Conform Password" type="password" name="password1"  required>
+                                                            </div>  
+
+                                                   
+                                                    
+                        
+                                            </div>
+                                            <div class="modal-footer">
+                                              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                              <button type="submit" class="btn btn-primary">Save changes</button>
+                                            </div>
+                                        </form>
+
+
+
+                                            
+                                          </div>
+                                        </div>
+                                      </div>
+{% comment %}+=========================== Edite profilemodel ========================={% endcomment %}
+                                    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog" role="document">
+                                          <div class="modal-content">
+                                            <div class="modal-header">
+                                              <h5 class="modal-title" id="exampleModalLabel">Edit Profile</h5>
+                                              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                              </button>
+                                            </div>
+                                            <div class="modal-body">
+
+ {% comment %}+=========================== Edit Profile ========================={% endcomment %}
+
+
+                                                <form method="post" enctype="multipart/form-data">
+                                                    {% csrf_token %}
+                                                    
+                        
+                                                    <div class="form-row">
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label for="first_name">First name</label>
+                                                                <input type="text" id="first_name" class="form-control" value="{{request.user.first_name}}" placeholder="First name" name="first_name" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label for="last_name">Last name</label>
+                                                                <input type="text" id="last_name" class="form-control" value="{{request.user.last_name}}" placeholder="Last name" name="last_name" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                        
+                                                 
+                        
+                                                    <div class="form-group">
+                                                        <label for="phone">Phone Number</label>
+                                                        <input id="phone" class="form-control" value="{{request.user.phone}}" type="text" name="phone" pattern="[0-9]{10}" required>
+                                                    </div>
+
+                                                    <div class="form-group">
+                                                        <label for="image">Upload image</label>
+                                                        <input id="image" class="form-control" value="{{request.user.profile_image}}" type="file" accept="image/*" name="image" >
+                                                    </div>
+                                                    
+                        
+                                                    
+                                                    
+                        
+                                            </div>
+                                            <div class="modal-footer">
+                                              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                              <button type="submit" class="btn btn-primary">Save changes</button>
+                                            </div>
+                                        </form>
+                                          </div>
+                                        </div>
+                                      </div>
+                                </div>
+                        </figure>
+                        <hr>
+                        <p>
+                            <i class="fa fa-map-marker text-muted"></i> &nbsp; My address:  
+                            <br><br>
+                             {% for address in request.user.address.all %}
+                             <strong>{{address.name}}</strong><br>
+                             {{address.address}}, {{address.place}}, {{address.city}}, {{address.state}}-{{address.pincode}} <br> {{address.phone}} {% if address.alternate_number %} ,{{address.alternate_number}}{% endif %}
+                           
+                            <a href="#" data-toggle="modal" data-target="#editAddress" class="btn-link"> Edit</a>
+                        </p>
+                  {% comment %}================================= edit address modal========================={% endcomment %}
+
+
+                    <div class="modal fade" id="editAddress" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Edit Address</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            </div>
+                            <div class="modal-body">
+                                
+                                    
+                                        <form action="{% url 'update_address' address.uid %}" method="post" >
+                                                {% csrf_token %}
+                                    
+                                            <div class="row">
+                                                    
+                                                    <div class="form-group col-sm-6">
+                                                        <label>Name</label>
+                                                        <input type="text" placeholder="Name" name="name" value="{{address.name}}" class="form-control">
+                                                    </div>
+                                                    <div class="form-group col-sm-6">
+                                                        <label>Phone</label>
+                                                        <input type="text" placeholder="10-digit mobile number" value="{{address.phone}}" name="phone" class="form-control">
+                                                    </div>
+                                                    <div class="form-group col-sm-6">
+                                                        <label>Pincode</label>
+                                                        <input type="text" placeholder="Pincode" value="{{address.pincode}}" name="pincode" class="form-control">
+                                                    </div>
+                                                    <div class="form-group col-sm-6">
+                                                        <label>Place</label>
+                                                        <input type="text" placeholder="Place" value="{{address.place}}" name="place" class="form-control">
+                                                    </div>
+                                                    <div class="form-group col-sm-12">
+                                                        <label>Address</label>
+                                                        <input type="text" placeholder="Address (Area and Street)" value="{{address.address}}" name="address" class="form-control">
+                                                    </div>
+                                                    <div class="form-group col-sm-6">
+                                                        <label>City/District</label>
+                                                        <input type="text" placeholder="City/District" value="{{address.city}}" name="city" class="form-control">
+                                                    </div>
+                                                    <div class="form-group col-sm-6">
+                                                        <label>State</label>
+                                                        <input type="text" placeholder="State" name="state" value="{{address.state}}" class="form-control">
+                                                    </div>
+                                                    <div class="form-group col-sm-6">
+                                                        <label>Landmark</label>
+                                                        <input type="text" placeholder="Landmark (Optional)" value="{{address.landmark}}" name="landmark" class="form-control">
+                                                    </div>
+                                                    <div class="form-group col-sm-6">
+                                                        <label>Alternate Phone</label>
+                                                        <input type="text" placeholder="Alternate Phone(Optional)" value="{{address.alternate_number}}" name="alternate_number" class="form-control">
+                                                    </div>
+                                            </div> 
+                                    
+                                
+                                    
+                            </div>
+                            <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Add</button>
+                            </div>
+                        </form>
+                        </div>
+                        </div>
+                    </div>
+                        {% endfor %}
+
+                        <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#addAddress">  <i class="fas fa-plus"></i>
+                            Add Address </a>
+                
+                             <!-- Modal -->
+                            <div class="modal fade" id="addAddress" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">Add Address</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        
+                                               
+                                                <form action="{% url 'add_address' %}" method="post" >
+                                                        {% csrf_token %}
+                                            
+                                                    <div class="row">
+                                                            
+                                                            <div class="form-group col-sm-6">
+                                                                <label>Name</label>
+                                                                <input type="text" placeholder="Name" name="name" class="form-control">
+                                                            </div>
+                                                            <div class="form-group col-sm-6">
+                                                                <label>Phone</label>
+                                                                <input type="text" placeholder="10-digit mobile number" name="phone" class="form-control">
+                                                            </div>
+                                                            <div class="form-group col-sm-6">
+                                                                <label>Pincode</label>
+                                                                <input type="text" placeholder="Pincode" name="pincode" class="form-control">
+                                                            </div>
+                                                            <div class="form-group col-sm-6">
+                                                                <label>Place</label>
+                                                                <input type="text" placeholder="Place" name="place" class="form-control">
+                                                            </div>
+                                                            <div class="form-group col-sm-12">
+                                                                <label>Address</label>
+                                                                <input type="text" placeholder="Address (Area and Street)" name="address" class="form-control">
+                                                            </div>
+                                                            <div class="form-group col-sm-6">
+                                                                <label>City/District</label>
+                                                                <input type="text" placeholder="City/District" name="city" class="form-control">
+                                                            </div>
+                                                            <div class="form-group col-sm-6">
+                                                                <label>State</label>
+                                                                <input type="text" placeholder="State" name="state" class="form-control">
+                                                            </div>
+                                                            <div class="form-group col-sm-6">
+                                                                <label>Landmark</label>
+                                                                <input type="text" placeholder="Landmark (Optional)" name="landmark" class="form-control">
+                                                            </div>
+                                                            <div class="form-group col-sm-6">
+                                                                <label>Alternate Phone</label>
+                                                                <input type="text" placeholder="Alternate Phone(Optional)" name="alternate_number" class="form-control">
+                                                            </div>
+                                                    </div> <!-- row.// -->	
+                                               
+                                          
+                                            
+                                    </div>
+                                    <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-primary">Add</button>
+                                    </div>
+                                </form>
+                                </div>
+                                </div>
+                            </div>
+                    </div>
+                    
+{% comment %}================================= End my Profile ========================={% endcomment %}
+                </div>
+
+                
+                <div class="tab-pane fade" id="list-messages" role="tabpanel" aria-labelledby="list-messages-list">3</div>
+                <div class="tab-pane fade" id="list-settings" role="tabpanel" aria-labelledby="list-settings-list">4</div>
+            </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+
+
+
+
+
+      
+
+
+
+{% endblock %}

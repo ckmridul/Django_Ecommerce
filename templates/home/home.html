@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<nav class="navbar navbar-main navbar-expand-lg navbar-light border-bottom">
+    <div class="container">
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#main_nav" aria-controls="main_nav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+  
+      <div class="collapse navbar-collapse" id="main_nav">
+        <ul class="navbar-nav">
+            
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'index' %}"><b>Home</b></a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'shop' %}">Shope</a>
+          </li>
+          {% for catagory in catagories %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'catagory_show' catagory.uid %}">{{catagory.category_name}}</a>
+          </li>
+          {% endfor %}
+          {% comment %} <li class="nav-item">
+            <a class="nav-link" href="{% url 'mobile' %}">Mobile</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="page-listing-grid.html">Tablets</a>
+          </li> {% endcomment %}
+          
+        </ul>
+      </div> <!-- collapse .// -->
+    </div> <!-- container .// -->
+  </nav>
+  
+  </header> <!-- section-header.// -->
+
+<!-- ========================= SECTION INTRO ========================= -->
+<section class="section-intro padding-y-sm">
+    <div class="container">
+    
+    <div class="intro-banner-wrap">
+        <img src="{% static 'images/banners/1.jpg' %}" class="img-fluid rounded">
+    </div>
+    
+    </div> <!-- container //  -->
+    </section>
+    <!-- ========================= SECTION INTRO END// ========================= -->
+    
+    
+    <!-- ========================= SECTION FEATURE ========================= -->
+    <section class="section-content padding-y-sm">
+    <div class="container">
+    <article class="card card-body">
+    
+    
+    <div class="row">
+        <div class="col-md-4">	
+            <figure class="item-feature">
+                <span class="text-primary"><i class="fa fa-2x fa-truck"></i></span>
+                <figcaption class="pt-3">
+                    <h5 class="title">Fast delivery</h5>
+                    <p>Dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+                    tempor incididunt ut labore </p>
+                </figcaption>
+            </figure> <!-- iconbox // -->
+        </div><!-- col // -->
+        <div class="col-md-4">
+            <figure  class="item-feature">
+                <span class="text-primary"><i class="fa fa-2x fa-landmark"></i></span>	
+                <figcaption class="pt-3">
+                    <h5 class="title">Creative Strategy</h5>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+                     </p>
+                </figcaption>
+            </figure> <!-- iconbox // -->
+        </div><!-- col // -->
+        <div class="col-md-4">
+            <figure  class="item-feature">
+                <span class="text-primary"><i class="fa fa-2x fa-lock"></i></span>
+                <figcaption class="pt-3">
+                    <h5 class="title">High secured </h5>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+                     </p>
+                </figcaption>
+            </figure> <!-- iconbox // -->
+        </div> <!-- col // -->
+    </div>
+    </article>
+    
+    </div> <!-- container .//  -->
+    </section>
+    <!-- ========================= SECTION FEATURE END// ========================= -->
+    
+    <!-- ========================= SECTION CONTENT ========================= -->
+<section class="section-content">
+    <div class="container">
+    
+    <header class="section-heading">
+        <h3 class="section-title">Popular products</h3>
+    </header><!-- sect-heading -->
+    <div class="row">
+      {% for product in products %}
+           <div class="col-md-3" style="display: inline-block;">
+               <div class="card card-product-grid">
+                   <a href="{% url 'get_product' product.slug %}" class="img-wrap"> <img src="media/{{product.product_image.first.image}}"> </a>
+                   <figcaption class="info-wrap">
+                       <a href="./product-detail.html" class="title"><b>{{product.product_name}}</b></a>
+                       
+                       <div class="price mt-1">₹{{product.productVariant.first.price}}.00</div> <!-- price-wrap.// -->
+                       {% if product.offer %}
+                       <p style="color:green;"> 
+                        <strong>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tags" viewBox="0 0 16 16">
+                            <path d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 0 1 1-1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 2 6.586V2z"/>
+                            <path d="M5.5 5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm0 1a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM1 7.086a1 1 0 0 0 .293.707L8.75 15.25l-.043.043a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 0 7.586V3a1 1 0 0 1 1-1v5.086z"/>
+                            </svg>
+                            
+                        {{product.offer.name}} {{product.offer.percentage}}% Off
+                      </strong>
+                    </p>
+                        {% endif %}
+
+                       {% if product.category.offer %}
+                       <p style="color:green;"> 
+                          <strong>
+
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tags" viewBox="0 0 16 16">
+                        <path d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 0 1 1-1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 2 6.586V2z"/>
+                        <path d="M5.5 5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm0 1a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM1 7.086a1 1 0 0 0 .293.707L8.75 15.25l-.043.043a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 0 7.586V3a1 1 0 0 1 1-1v5.086z"/>
+                        </svg>
+
+                        {{product.category.offer.name}} {{product.category.offer.percentage}}% Off on all {{product.category.category_name}}s
+                      </strong>
+                      </p>
+                       {% endif %}
+                       
+                   </figcaption>
+               </div>
+           </div> <!-- col.// -->
+       {% endfor %}
+   </div> <!-- row.// -->
+   
+
+</header> <!-- section-header.// -->
+
+{% endblock  %}

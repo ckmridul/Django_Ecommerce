@@ -1,0 +1,39 @@
+
+
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+
+<!-- ========================= SECTION PAGETOP ========================= -->
+<section class="section-pagetop bg">
+    <div class="container">
+        <h2 class="title-page">Search Result</h2>
+    </div> <!-- container //  -->
+    </section>
+    <!-- ========================= SECTION INTRO END// ========================= -->
+
+    <section class="section-content padding-y-sm">
+        <div class="container">
+        <article class="card card-body">
+
+            <div class="row">
+                {% for product in products %}
+                     <div class="col-md-4" style="display: inline-block;">
+                         <div class="card card-product-grid">
+                             <a href="{% url 'get_product' product.slug %}" class="img-wrap"> <img src="{{product.product_image.first.image.url}}"> </a>
+                             <figcaption class="info-wrap">
+                                 <a href="./product-detail.html" class="title"><b>{{product.product_name}}</b></a>
+          
+                                 <div class="price mt-1">₹{{product.productVariant.first.price}}.00</div> <!-- price-wrap.// -->
+                             </figcaption>
+                         </div>
+                     </div> <!-- col.// -->
+                 {% endfor %}
+             </div> <!-- row.// -->
+    </article>
+</div>
+</selction>
+    
+
+{% endblock %}

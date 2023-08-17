@@ -1,0 +1,273 @@
+
+
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+
+
+<!-- ========================= SECTION PAGETOP ========================= -->
+<section class="section-pagetop bg">
+    <div class="container">
+        <h2 class="title-page">Shopping cart</h2>
+    </div> <!-- container //  -->
+    </section>
+    <!-- ========================= SECTION INTRO END// ========================= -->
+    
+    <!-- ========================= SECTION CONTENT ========================= -->
+    <section class="section-content padding-y">
+        {% include 'alert.html' %}
+    <div class="container">
+    
+    <div class="row">
+    <main class="col-md-9">
+    <div class="card">
+        {% if cart_items %}
+        
+    <table class="table table-borderless table-shopping-cart">
+    <thead class="text-muted">
+    <tr class="small text-uppercase">
+      <th scope="col">Product</th>
+      <th scope="col" width="120">Quantity</th>
+      <th scope="col" width="120">Price</th>
+      <th scope="col" class="text-right" width="200"> </th>
+    </tr>
+    </thead>
+    <tbody>
+        {% for cart_item in cart_items%}
+    <tr data-uid="{{ cart_item.uid }}">
+        <td>
+            <figure class="itemside">
+                <div class="aside"><img src="{{cart_item.product.product_image.first.image.url}}" class="img-sm"></div>
+                <figcaption class="info">
+                    <a href="#" class="title text-dark">{{cart_item.product.product_name}}</a>
+                    <p class="text-muted small">Ram: {{cart_item.variant.ram}}, Storage: {{cart_item.variant.storage}}, <br> Brand: {{cart_item.product.brand.title}}</p>
+                </figcaption>
+            </figure>
+        </td>
+        <td class="product-quantity">
+          <div class="quantity">
+            <input type="number" id="new_quantity" class="form-control quantity-input" step="1" min="0" data-uid="{{ cart_item.uid }}" value="{{ cart_item.quantity }}" title="Qty" size="4" placeholder="" inputmode="numeric" autocomplete="off">          </div>
+        </td>
+        <td> 
+            <div class="price-wrap"> 
+                <var id = "itemTotal" class=" price item-total"  data-uid="{{ cart_item.uid }}"> &#x20B9; {{cart_item.get_total_price}} </var> 
+                <small class="text-muted"> &#x20B9; {{cart_item.variant.price}} each </small> 
+            </div> <!-- price-wrap .// -->
+        </td>
+        <td class="text-right"> 
+        {% comment %} <a data-original-title="Save to Wishlist" title="" href="" class="btn btn-light" data-toggle="tooltip"> <i class="fa fa-heart"></i></a>  {% endcomment %}
+        <button type='button' class="btn btn-light" data-toggle="modal" data-target="#removeModal{{ cart_item.uid }}">Remove</button>
+
+        </td>
+    </tr>
+     <!-- Modal -->
+     <div class="modal fade" id="removeModal{{ cart_item.uid }}" tabindex="-1" role="dialog" aria-labelledby="removeModalLabel{{ cart_item.uid }}" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Remove item</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to remove this item?</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <a href="{% url 'delete_cart_item' cart_item.uid %}" class="btn btn-primary">Remove</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    </tbody>
+    </table>
+    
+    <div class="card-body border-top">
+        <a href="{% url 'make_order' %}" class="btn btn-primary float-md-right"> Make Purchase <i class="fa fa-chevron-right"></i> </a>
+        <a href="{% url 'index' %}" class="btn btn-light"> <i class="fa fa-chevron-left"></i> Continue shopping </a>
+    </div>	
+    {% else %}
+    <div class="d-flex align-items-center justify-content-center" >
+        <!-- Content inside the centered div -->
+        <div >
+            <img src="/media/cart/cart.webp" height="300">
+          
+          
+        </div>
+    </div>
+    <div class="d-flex align-items-center justify-content-center" >
+    <h3 >Your cart is empty!</h3>
+    </div>
+    <div class="d-flex align-items-center justify-content-center" >
+        <p>Explore our wide selection and find something you like</p>
+    </div>
+    {% endif %}
+    </div> <!-- card.// -->
+    
+    <div class="alert alert-success mt-3">
+        <p class="icontext"><i class="icon text-success fa fa-truck"></i> Free Delivery within 1-2 weeks</p>
+    </div>
+    
+        </main> <!-- col.// -->
+        <aside class="col-md-3">
+            <div class="card mb-3">
+                <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                   
+                    <div class="form-group">
+                        <label>Have coupon?</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="coupen" placeholder="Coupon code">
+                            <span class="input-group-append"> 
+                                <button type="submit" class="btn btn-primary">Apply</button>
+                            </span>
+                        </div>
+                    </div>
+                    {% if cart.coupon %}
+                    <a href="{% url 'remove_coupon' %}" class="btn btn-primary">{{cart.coupon.coupon_code}}</a>
+                    {% endif %}
+                </form>
+                </div> <!-- card-body.// -->
+            </div>  <!-- card .// -->
+            <div class="card">
+                <div class="card-body">
+                        <dl class="dlist-align">
+                          <dt>Sub total:</dt>
+                          <dd class="text-right"id="subTotal">&#x20B9; {{ total_price }}</dd>
+                        </dl>
+                        <dl class="dlist-align">
+                          <dt>Discount:</dt>
+                          <dd class="text-right">- &#x20B9; {{discount}} </dd>
+                        </dl>
+
+                        <dl class="dlist-align">
+                            <dt>Coupon:</dt>
+                            <dd class="text-right">- &#x20B9; {{coupon_price}} </dd>
+                          </dl>
+
+                        <dl class="dlist-align">
+                          <dt>Total:</dt>
+                          <dd class="text-right  h5" id="total">&#x20B9;{{ total}}</strong></dd>
+                        </dl>
+                        <hr>
+                        <p class="text-center mb-3">
+                            <img src="images/misc/payments.png" height="26">
+                        </p>
+                        
+                </div> <!-- card-body.// -->
+            </div>  <!-- card .// -->
+        </aside> <!-- col.// -->
+    </div>
+    
+    </div> <!-- container .//  -->
+    </section>
+    <!-- ========================= SECTION CONTENT END// ========================= -->
+    
+    <!-- ========================= SECTION  ========================= -->
+    <section class="section-name bg padding-y">
+    <div class="container">
+    <h6>Payment and refund policy</h6>
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+    tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+    quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+    consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+    cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+    proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+    tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+    quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+    consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+    cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+    proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    
+    </div><!-- container // -->
+    </section>
+    <!-- ========================= SECTION  END// ========================= -->
+    
+    <!-- ========================= FOOTER ========================= -->
+    <footer class="section-footer border-top padding-y">
+        <div class="container">
+            <p class="float-md-right"> 
+                &copy Copyright 2019 All rights reserved
+            </p>
+            <p>
+                <a href="#">Terms and conditions</a>
+            </p>
+        </div><!-- //container -->
+    </footer>
+    <!-- ========================= FOOTER END // ========================= -->
+
+<!-- Your existing JavaScript content (if any) -->
+<script>
+    {% comment %} function updateQuantity(input){
+        console.log(input.value);
+        console.log(input.getAttribute('data-uid'));
+
+        const queryString = `?Qty=${encodeURIComponent(input.value)}&id=${encodeURIComponent(input.getAttribute('data-uid'))}`;
+
+        window.location.href = window.location.pathname + queryString;
+
+
+    } {% endcomment %}
+
+
+
+    {% comment %} const inputElement = document.getElementById('new_quantity'); {% endcomment %}
+    const quantityInputs = document.querySelectorAll('.quantity-input');
+    const itemTotalSpans = document.querySelectorAll('.item-total');
+       quantityInputs.forEach((input, index) => {
+        input.addEventListener('input', function() {
+            const newValue = input.value;
+            const uid = input.getAttribute('data-uid');
+
+            console.log(newValue);
+            console.log(uid);
+
+            fetch("{% url 'update_cart' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ uid, quantity: newValue })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                
+                updateItemTotal(data.item_total, uid);
+                $('#subTotal').text(data.sub_total);
+                $('#total').text(data.total);
+
+
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    });
+        
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+   
+        function updateItemTotal(itemTotal, uid) {
+            const itemTotalSpan = document.querySelector(`.item-total[data-uid="${uid}"]`);
+            if (itemTotalSpan) {
+                itemTotalSpan.textContent = itemTotal;
+            }
+        }
+
+
+</script>
+</body>
+</html>
+
+
+    {% endblock %}

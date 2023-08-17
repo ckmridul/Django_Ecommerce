@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<section class="section-pagetop bg">
+    <div class="container">
+        <h2 class="title-page">My account</h2>
+    </div> <!-- container //  -->
+    </section>
+<section class="section-content padding-y">
+    <div class="container">
+        
+        <div class="row">
+            <div class="col-3">
+            <div class="list-group" id="list-tab" role="tablist">
+                <a class="list-group-item list-group-item-action"href="{% url 'userprofile' %}" role="tab">Profile</a>
+                <a class="list-group-item list-group-item-action" href="{% url 'myOrder' %}">My Order</a>
+                <a class="list-group-item list-group-item-action active" href="{% url 'wishlist' %}" role="tab" aria-controls="messages">Wish list</a>
+            </div>
+            </div>
+            <div class="col-8">
+            <div class="tab-content" >
+                <article class="card mb-4">
+                    <div class="card-body">
+                        <h4 class="card-title mb-4">Wish list</h4>
+                        {% if wishlist.wishlistitem.all %}
+                        <div class="row">
+                            {% for wish in wishlist.wishlistitem.all %}
+<div class="col-md-12">
+    <div class="card mb-2">
+        <div class="row g-0">
+            <div class="col-md-2">
+                <img src="{{ wish.product.product_image.first.image.url }}" class="img-fluid" alt="Product Image">
+            </div>
+            <div class="col-md-6">
+                <div class="card-body">
+                    <h5 class="card-title">{{ wish.product.product_name }} {{ wish.variant.ram }}</h5>
+                    <p class="card-text">{{ wish.variant.storage }}</p>
+                    <p class="card-text text-end"><strong>&#8377;{{ wish.variant.price }}</strong></p>
+                </div>
+            </div>
+            <div class="col-md-4 d-flex justify-content-center align-items-center">
+                <a class = "btn btn-primary m-4" href= "{% url 'add_to_cart_from_wish' wish.uid %}"> <i class="fas fa-shopping-cart "></i></a>
+                <a class = "btn btn-danger" href= "{% url 'delete_wishlist' wish.uid %}"> <i class="fas fa-trash-alt"></i></a>
+                
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+
+                        </div> <!-- row.// -->
+                    </div> <!-- card-body.// -->
+                    </article> <!-- card.// -->
+                    {% else %}
+                    <h3> No Items!<h3>
+
+{% endif %}
+        
+                    {% endblock %}

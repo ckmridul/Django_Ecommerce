@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="card-wrap">
+    <div class="row no-gutters">
+        <aside class="col-sm-6 border-right">
+            <article class="gallery-wrap">
+                <div class="img-big-wrap" >
+                    <div class=" centered-content img-zoom-container">
+                        <img id="main-image" src="/media/{{ product.product_image.first.image }}">
+                        <div id="zoom-result" class="img-zoom-result"></div>
+                    </div>
+                </div> <!-- img-big-wrap.// -->
+                <div class="thumbs-wrap">
+                    {% for image in product.product_image.all %}
+                    
+                        <a href="#" class="item-thumb" onclick="changeImage('{{ image.image.url }}')">
+                            <img src="{{ image.image.url }}">
+                        </a>
+                    
+                    {% endfor %}
+                </div> <!-- thumbs-wrap.// -->
+            </article> <!-- gallery-wrap .end// -->
+        </aside>
+        <main class="col-sm-6">
+            <article class="content-body">
+                <h3 class="title">{{ product.product_name }}</h3>
+                <div class="rating-wrap mb-3">
+                    <span class="badge badge-warning"> <i class="fa fa-star"></i> 3.8</span>
+                    <small class="text-muted ml-2">45 reviews</small>
+                </div> 
+                <p>{{ product.product_description }}</p><br>
+                <ul class="list-check mb-4">
+                    <li><strong>Brand : {{product.brand}}<strong></li>
+                </ul>
+                <ul class="list-check mb-4">
+                    <li><strong> Storage: {{selected_variant.storage}}<strong></li>
+                </ul>
+               
+                <div class="item-option-select">
+                    <h6>Ram</h6>
+                    <div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
+                        {% for variant in product.productVariant.all %}
+                        <label class="btn btn-light {% if selected_ram == variant.ram%}active {% endif %}">
+                            <input type="radio" onchange ="get_ram_varient('{{variant.ram}}')" name="ram_options" checked=""> {{variant.ram }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="row mt-3 align-items-center">
+                    <div class="col">
+                        {% include 'alert.html' %}
+                        {% if price %}
+                        <span class="price h4" >
+                            ₹{{price.0}} <br><s>₹{{ selected_variant.price }}</s> 
+                            <br><br>
+                        <p style="color: green; font-size: 14px;">
+                            <strong>
+
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tags" viewBox="0 0 16 16">
+                                <path d="M3 2v4.586l7 7L14.586 9l-7-7H3zM2 2a1 1 0 0 1 1-1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 2 6.586V2z"/>
+                                <path d="M5.5 5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm0 1a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM1 7.086a1 1 0 0 0 .293.707L8.75 15.25l-.043.043a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 0 7.586V3a1 1 0 0 1 1-1v5.086z"/>
+                                </svg>
+        
+                                {{price.1.name}} {{price.1.percentage}}% Offer applyed 
+                            </strong>
+                        </p>
+                        </span> 
+
+                        {% else %}
+                        <span class="price h4" >₹{{ selected_variant.price }}</span> 
+                        {% endif %}
+                    </div> <!-- col.// -->
+                    <div class="col text-right">
+                    </div> <!-- col.// -->
+
+
+                    <div class="col text-right">
+                        {% if selected_variant.quantity %}
+                        <a href= "{% url 'add_to_cart' product.uid %}?variant={{selected_variant.uid}}" class="btn btn-primary" > <span class="text">Add to cart</span> <i class="icon fas fa-shopping-cart"></i> </a>
+                        {% if not wish %}
+                        <a href="{% url 'add_wishlist' v_uid=selected_variant.uid p_uid=product.uid %}" class="btn btn-light"> <i class="fas fa-heart"></i>  </a>
+                        {% else %}
+                        <span class="btn btn-light"> <i class="fas fa-heart" style="color: red;"></i>
+                        </span>
+                        {% endif %}
+                        {% else %} 
+                        <h3 style="color: red;">Out of Stock!</h3>
+                        {% endif %}
+                    </div> <!-- col.// -->
+                </div> <!-- row.// -->
+            </article> <!-- content-body .// -->
+        </main> <!-- col.// -->
+    </div> <!-- row.// -->
+</div>
+
+<script>
+    function get_ram_varient(ram){
+        window.location.href = window.location.pathname + '?ram=' + encodeURIComponent(ram);
+    }
+
+    function changeImage(imageSrc) {
+      var mainImage = document.getElementById('main-image');
+      mainImage.src = imageSrc;
+  
+      // Re-initiate zoom effect on the new image
+      imageZoom("main-image");
+    }
+  
+    function imageZoom(imgID) {
+      var img = document.getElementById(imgID);
+      img.addEventListener("mousemove", moveLens);
+      img.addEventListener("touchmove", moveLens);
+  
+      var resultDiv = document.createElement("DIV");
+      resultDiv.className = "img-zoom-result";
+      img.parentElement.appendChild(resultDiv);
+  
+      function moveLens(e) {
+        var pos, x, y;
+        pos = getCursorPos(e);
+        x = pos.x;
+        y = pos.y;
+  
+        var cx = img.offsetWidth / resultDiv.offsetWidth;
+        var cy = img.offsetHeight / resultDiv.offsetHeight;
+  
+        resultDiv.style.backgroundImage = "url('" + img.src + "')";
+        resultDiv.style.backgroundSize = (img.width * cx) + "px " + (img.height * cy) + "px";
+  
+        // Update the background position to correctly show the zoomed image
+        resultDiv.style.backgroundPosition = "-" + (x * cx - resultDiv.offsetWidth / 2) + "px -" + (y * cy - resultDiv.offsetHeight / 2) + "px";
+      }
+  
+      function getCursorPos(e) {
+        var a, x = 0, y = 0;
+        e = e || window.event;
+        a = img.getBoundingClientRect();
+        x = e.pageX - a.left;
+        y = e.pageY - a.top;
+        x = x - window.pageXOffset;
+        y = y - window.pageYOffset;
+        return { x: x, y: y };
+      }
+    }
+  
+    // Initiate zoom effect on the initial image
+    imageZoom("main-image");
+{% comment %} 
+    //Ajax
+    function get_ram_varient(ram) {
+        $.ajax({
+          url: 'http://127.0.0.1:3000/product/<slug>/', // Replace with your Django URL for fetching data
+          method: 'GET',
+          data: { 'ram': ram },
+          dataType: 'json',
+          success: function(data) {
+            // Update the price and storage options in the form
+            $('#product-price').text('₹' + data.price);
+            var storageOptionsContainer = $('.thumbs-wrap');
+            storageOptionsContainer.empty();
+            $.each(data.storage_options, function(index, option) {
+              storageOptionsContainer.append('<a href="#" class="item-thumb" onclick="changeImage(\'' + option.image_url + '\')"><img src="' + option.image_url + '"></a>');
+            });
+          },
+          error: function(xhr, status, error) {
+            console.error('AJAX request failed: ' + status + ', ' + error);
+          }
+        });
+      }
+       {% endcomment %}
+
+
+  </script>
+  
+  
+
+{% endblock %}
