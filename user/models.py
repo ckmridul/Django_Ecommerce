@@ -7,7 +7,8 @@ from product.models import Product,ProductVariant
 # Create your models here.
 
 class Address(BaseModel):
-    user =  models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='address')
+    user =  models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='address', blank=True, null=True)
+    session_id = models.CharField(max_length=100)
     name = models.CharField(max_length=50)
     landmark = models.CharField(max_length=100, blank= True, null=True)
     city = models.CharField(max_length=50)

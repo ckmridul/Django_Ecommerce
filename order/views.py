@@ -6,6 +6,12 @@ import random,time
 import razorpay,json
 from django.conf import settings
 from django.http import JsonResponse
+from base.session_key import session_key
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from weasyprint import HTML
+
+
 
 
 # Create your views here.
@@ -20,19 +26,31 @@ def get_payment_details(pid):
 
 
 def payment(request):
-    
     body = json.loads(request.body)
     print(body)
     OrdID = body['OrdID']
-    order = Order.objects.get(user = request.user, is_orderd = False, order_number = OrdID)
     pid = body['PayID']
     payment_details = get_payment_details(pid)
-    payment = Payment(
-        user = request.user,
-        payment_id = payment_details['id'],
-        payment_method = payment_details['method'],
-        amount_paid = order.order_total,
-        status = payment_details['status'])
+    
+    if request.user.is_authenticated:
+        order = Order.objects.get(user = request.user, is_orderd = False, order_number = OrdID)
+        payment = Payment(
+            user = request.user,
+            payment_id = payment_details['id'],
+            payment_method = payment_details['method'],
+            amount_paid = order.order_total,
+            status = payment_details['status']
+            )
+    else:
+        order = Order.objects.get(session_id = session_key(request), is_orderd = False, order_number = OrdID)
+        payment = Payment(
+            session_id = session_key(request),
+            payment_id = payment_details['id'],
+            payment_method = payment_details['method'],
+            amount_paid = order.order_total,
+            status = payment_details['status']
+            )
+    
     print(payment)
     payment.save()
     order.payment = payment
@@ -41,7 +59,11 @@ def payment(request):
     order.save()
     
     #cartItems to order item
-    cart = Cart.objects.get(user = request.user)
+    if request.user.is_authenticated:
+        cart = Cart.objects.get(user = request.user)
+    else:
+        cart = Cart.objects.get(session_id = session_key(request))
+
     cartItems = cart.cart_items.all()
     for item in cartItems:
         order_product = OrderProduct(
@@ -69,11 +91,15 @@ def payment(request):
 
 
 def place_order(request):
-    user = request.user
-    cart = Cart.objects.get(user=user)
+    user = None
+    if request.user.is_authenticated:
+        user = request.user
+        cart = Cart.objects.get(user=user)
+    else:
+        cart = Cart.objects.get(session_id = session_key(request))
     cart_items = CartItem.objects.filter(cart = cart)
     total_price = sum(item.get_total_price() for item in cart_items)
-    discount = sum(item.product.get_offer_price(item.variant) for item in cart_items)
+    discount = round(sum(item.product.get_offer_price(item.variant) for item in cart_items),2)
     
     if not cart_items.exists():
         return redirect('/')
@@ -95,16 +121,28 @@ def place_order(request):
         random_number = random.randint(1000, 9999)
         order_number = f"ORD-{timestamp}-{random_number}"
         address = Address.objects.get(uid=address_id)
-        order = Order(
-            user=user,
-            order_total=total,
-            address=address,
-            order_number=order_number,
-            coupon_price = coupon_price,
-            subtotal = total_price,
-            discount = discount
-            
-        )
+        if user:
+            order = Order(
+                user=user,
+                order_total=total,
+                address=address,
+                order_number=order_number,
+                coupon_price = coupon_price,
+                subtotal = total_price,
+                discount = discount
+                
+            )
+        else:
+                order = Order(
+                session_id=session_key(request),
+                order_total=total,
+                address=address,
+                order_number=order_number,
+                coupon_price = coupon_price,
+                subtotal = total_price,
+                discount = discount
+                
+            )
         order.save()
         client = razorpay.Client(auth=(settings.KEY, settings.SECRET))
         payment = client.order.create({'amount':int(total), 'currency': 'INR', 'payment_capture': 1})
@@ -146,3 +184,31 @@ def order_complete(request):
         return render(request, 'product/order_complete.html', context)
     except(Payment.DoesNotExist, Order.DoesNotExist):
         return redirect('index')
+    
+    
+    
+def download_invoice(request, uid):
+    order = Order.objects.get(uid=uid)
+    order_products = OrderProduct.objects.filter(order=order)
+    payment = order.payment
+    template = 'account/invoice.html'
+    
+    context = {
+        'order': order,
+        'order_products': order_products,
+        'transID': payment.payment_id,
+        'payment': payment
+    }
+
+    # Render the template to an HTML string
+    html_string = render_to_string(template, context)
+
+    # Generate PDF from HTML using WeasyPrint
+    pdf_file = HTML(string=html_string).write_pdf()
+
+    # Create a Django response with the PDF content
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="invoice.pdf"'
+
+    return response
+

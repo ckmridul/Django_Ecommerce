@@ -298,7 +298,7 @@ def image_delete(request, uid):
                'product_id':uid
                }
         messages.success(request,'image deleted successfully!')
-        return render(request,'adminpanel/productmanage/image.html',context)
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
     except:
            return redirect('productimage') 

@@ -1,0 +1,90 @@
+{% load static %}
+
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="pragma" content="no-cache" />
+    <meta http-equiv="cache-control" content="max-age=604800" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="/static/css/bootstrap.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+    <h2 style="text-align: center;">Invoice</h2>
+
+<div>
+    <div class="col-lg-6">
+        <!-- col-lg-6 start here -->
+        <div class="invoice-logo"><img src="/static/images/logo.png" alt="Invoice logo" style="max-height: 40px;"></div>
+    </div>
+    <div style="text-align: right; display:inline;">
+        <ul style="list-style-type: none; padding: 0;">
+            <li><strong>Invoiced To</strong></li>
+            <li>{{order.address.name}}</li>
+            <li> {{order.address.place}} </li>
+            <li>{{order.address.city}},{{order.address.state}} </li>
+            <li>{{order.address.pincode}}</li>
+        </ul>
+    </div>
+    <!-- Add more sections with inline styles -->
+</div>
+
+<div style="text-align: left; display: inline;">
+    <ul style="list-style-type: none; padding: 0;">
+        <li><strong>Order Number:</strong> #{{order.order_number}}</li>
+        <li><strong>Transaction:</strong> #{{transID}}</li>
+        <li><strong>Order Date:</strong> #{{order.created_at}}</li>
+        <li><strong>Status:</strong> #{{payment.status}}</li>
+    </ul>
+</div><br>
+
+
+<div style="overflow: hidden; outline: none;" tabindex="0">
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #ccc; padding: 100px;">
+        <thead>
+            <tr style="height: 50px;">
+                <th style="width: 70%; text-align: center; border: 1px solid #ccc;">Description</th>
+                <th style="width: 5%; text-align: center; border: 1px solid #ccc;">Qty</th>
+                <th style="width: 25%; text-align: center; border: 1px solid #ccc;">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for orderItem in order_products %}
+            <tr style="height: 50px;">
+                <td style="text-align: left; border: 1px solid #ccc;">{{orderItem.product.product_name}} {{orderItem.variation.ram}} {{orderItem.variation.storage}}</td>
+                <td style="text-align: left; border: 1px solid #ccc;">{{orderItem.quantity}}</td>
+                <td style="text-align: left; border: 1px solid #ccc;">₹{{orderItem.variation.price}}.00</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr style="height: 50px;">
+                <th colspan="2" style="text-align: right; border: 1px solid #ccc;">Sub Total:</th>
+                <th style="text-align: center; border: 1px solid #ccc;">₹{{order.subtotal}}</th>
+            </tr>
+            <tr style="height: 50px;">
+                <th colspan="2" style="text-align: right; border: 1px solid #ccc;">Coupon</th>
+                <th style="text-align: center; border: 1px solid #ccc;">₹{{order.coupon_price}}</th>
+            </tr>
+            <tr style="height: 50px;">
+                <th colspan="2" style="text-align: right; border: 1px solid #ccc;">Offer</th>
+                <th style="text-align: center; border: 1px solid #ccc;">₹{{order.discount}}</th>
+            </tr>
+            <tr style="height: 50px;">
+                <th colspan="2" style="text-align: right; border: 1px solid #ccc;">Grand Total:</th>
+                <th style="text-align: center; border: 1px solid #ccc;">₹{{order.order_total}}</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<br><br>
+
+<div style="text-align: center;">
+    {% if not request.user.is_authenticated %}
+    <p>You purchased this item as a guest user!</p>
+    {% endif %}
+    <p>Thank you for shopping with us!</p>
+</div>
+
+</body>
+</html>

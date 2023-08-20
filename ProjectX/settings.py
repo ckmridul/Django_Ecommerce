@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'user',
     'adminpanel',
     'order',
-    'mathfilters'
+
   
 ]
 

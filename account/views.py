@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.contrib.auth import authenticate, login, logout
-from .models import Profile,Cart
+from .models import Profile,Cart,CartItem
 import random
 from base.emails import send_account_activation_email
 
@@ -25,7 +25,9 @@ def login_page(request):
         return redirect('/')
 
     if request.session.session_key:
-        cart_gust = Cart.objects.get(session_id = request.session.session_key)
+        cart_gust,_ = Cart.objects.get_or_create(session_id = request.session.session_key)
+    else:
+        cart_gust = None
     
     if request.method == "POST":
         email = request.POST.get("email")
@@ -50,11 +52,18 @@ def login_page(request):
                 gust_items = cart_gust.cart_items.all()
                 
                 for gust_item in gust_items:
-                    gust_item.cart = cart
-                    gust_item.save()
+                    if CartItem.objects.filter(cart = cart, variant = gust_item.variant):
+                        print('working...')
+                        item = CartItem.objects.filter(cart = cart, variant = gust_item.variant).first()
+                        item.quantity += gust_item.quantity
+                        item.save()
+                    else:
+                        gust_item.cart = cart
+                        gust_item.save()
                     
                 cart_gust.delete()
-                
+            if request.GET.get('check_out'):
+                return redirect('cart')
             return redirect("/")
         messages.warning(request,'Password does not match')
 
@@ -109,6 +118,7 @@ def register(request):
         )
         user_obj.set_password(password)
         email_otp = random.randint(100000, 999999)
+        print(email_otp)
         request.session['otp'] = email_otp
         user_obj.save()
 
@@ -143,10 +153,10 @@ def admin_login(request):
 
     
     if request.method == "POST":
-        email = request.POST.get("email")
+        username = request.POST.get("username")
         password = request.POST.get("password")
 
-        user_obj = Profile.objects.filter(username=email)
+        user_obj = Profile.objects.filter(username=username)
 
         if not user_obj.exists():
             messages.warning(request, "Account not found!")
@@ -156,17 +166,17 @@ def admin_login(request):
             messages.warning(request, "You can't access this site")
             return HttpResponseRedirect(request.path_info)
 
-        user_obj = authenticate(request, username=email, password=password)
+        user_obj = authenticate(request, username=username, password=password)
 
         if user_obj:
             login(request, user_obj)
-            return redirect("/admindashboard/")
+            return redirect("adminpanel")
 
     return render(request, "account/adminlogin.html")
 
 def logout_page(request):
     logout(request)
-    return redirect('/')
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
 
@@ -174,6 +184,7 @@ def forgot_password(request):
     if request.method == 'POST':
         try:
             email = request.POST['email']
+            print(email)
         except:
             email = None
         try:
@@ -190,7 +201,6 @@ def forgot_password(request):
             
         if get_otp:
             session_otp = request.session.get('otp')
-            print(type(session_otp))
             print(get_otp)
             if session_otp == int(get_otp):
                 del request.session['otp']
@@ -200,7 +210,6 @@ def forgot_password(request):
             return HttpResponseRedirect(request.path_info)
         if pass1:
             if pass1 == pass2:
-                print(email,'jj')
                 user_obj= Profile.objects.get(email=email)
                 user_obj.set_password(pass1)
                 user_obj.save()
@@ -215,7 +224,6 @@ def forgot_password(request):
                 user_obj = None
             if user_obj:
                 email_otp = random.randint(100000, 999999)
-                print(email_otp)
                 request.session['otp'] = email_otp
                 send_account_activation_email(email, email_otp)
                 return render(request,'account/forgot_password.html',{'otp':True,'email':email})

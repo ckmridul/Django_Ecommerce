@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from product.models import Product,ProductVariant
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect,JsonResponse
 from account.models import Cart,CartItem
 from django.contrib import messages
 from user.models import Wishlist,Wishlistitem
@@ -24,7 +24,10 @@ def get_product(request, slug):
             print(c_price)
             
         if p_offer and c_offer:
-            price = min(p_offer,c_offer)
+            if p_price == c_price:
+                price = p_offer
+            else:
+                price = min(p_offer,c_offer) 
         elif p_offer and not c_offer:
             price = p_offer
         elif not p_offer and c_offer:
@@ -40,7 +43,9 @@ def get_product(request, slug):
                    }
         
         if request.GET.get('ram'):
+            
             ram = request.GET.get('ram')
+            print(ram)
             variant = product.get_variants_by_ram(ram)
             if product.offer:
                 p_price = variant.price - (variant.price * (product.offer.percentage / 100))
@@ -53,7 +58,11 @@ def get_product(request, slug):
                 print(c_price)
                     
             if p_offer and c_offer:
-                price = min(p_offer,c_offer)
+                if p_price != c_price:
+                    price = min(p_offer,c_offer)
+                else:
+                    price = p_offer
+                    
             elif p_offer and not c_offer:
                 price = p_offer
             elif not p_offer and c_offer:
@@ -66,7 +75,7 @@ def get_product(request, slug):
             context['selected_variant'] = variant
             context['price'] = price
             
-            
+           
         
         
         wishlist = Wishlist.objects.get(user = request.user)
@@ -95,25 +104,30 @@ def session_key(request):
 
 def add_to_cart(request, uid):
    
-    variant_id = request.GET.get('variant')
+    variant_id = uid
     
-    product = Product.objects.get(uid = uid)
     if request.user.is_authenticated:
         user = request.user
         cart , _ = Cart.objects.get_or_create(user = user, is_paid = False)
+
     else:
         cart , _ = Cart.objects.get_or_create(session_id = session_key(request), is_paid = False)
         
-    if variant_id:
+    cart_items = cart.cart_items.all()
+    variant = ProductVariant.objects.get(uid = variant_id)
+    product = variant.product
+    cart_item,created = CartItem.objects.get_or_create(cart=cart, product=product,variant=variant)
+    if not created:
+        if cart_item.quantity > variant.quantity:
+            messages.warning(request, 'out of stock')
+            return HttpResponseRedirect(request.path_info)
+        cart_item.quantity += 1
+        cart_item.save()
         
-        variant = ProductVariant.objects.get(uid = variant_id)
-        cart_item,created = CartItem.objects.get_or_create(cart=cart, product=product,variant=variant)
-        if not created:
-            if cart_item.quantity > variant.quantity:
-                messages.warning(request, 'out of stock')
-                return HttpResponseRedirect(request.path_info)
-            cart_item.quantity += 1
-            cart_item.save()
-        messages.success(request, 'added succesfully')
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER')) 
+    cart_qty = cart_items.count()
+    data = {
+        'message': 'added succesfully',
+        'cart_qty': cart_qty
+    }
+    return JsonResponse(data)
 

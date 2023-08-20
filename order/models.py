@@ -7,7 +7,8 @@ from product.models import Product,ProductVariant
 # Create your models here. 
 
 class Payment(BaseModel):
-    user = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    user = models.ForeignKey(Profile, on_delete=models.CASCADE, blank=True, null=True)
+    session_id = models.CharField(max_length=100)
     payment_id = models.CharField(max_length=50)
     payment_method = models.CharField(max_length=100)
     amount_paid = models.CharField(max_length=10)
@@ -24,7 +25,8 @@ class Order(BaseModel):
         ('Cancelled','Cancelled')
     )
     
-    user = models.ForeignKey(Profile, on_delete = models.CASCADE, related_name="orders")
+    user = models.ForeignKey(Profile, on_delete = models.CASCADE, related_name="orders", blank=True, null=True)
+    session_id = models.CharField(max_length=100)
     payment = models.ForeignKey(Payment, on_delete = models.SET_NULL, blank=True,null=True)
     order_number = models.CharField(max_length=20)
     coupon_price = models.IntegerField(default=0)

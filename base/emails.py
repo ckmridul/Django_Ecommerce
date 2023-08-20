@@ -11,3 +11,4 @@ def send_account_activation_email(email, email_otp):
     {email_otp}'''
     
     send_mail(subject, message, email_from, [email])
+    

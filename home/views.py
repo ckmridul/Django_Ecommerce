@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from product.models import Product,Offer,Category
 from django.http import JsonResponse
+from account.models import Cart,CartItem
+from base.session_key import session_key
 
 # Create your views here.
 def index(request):
@@ -71,5 +73,21 @@ def catagory_show(request,uid):
         'catagories' : Category.objects.all(),
         }
     return render(request,'home/shop_catagory.html',context)
+
+
+
+def cart_counter(request):
+    print('cart_counter')
+    cart_count = 0
+    if request.user.is_authenticated:
+        cart_items = CartItem.objects.filter(cart__user=request.user)
+        cart_count = cart_items.count()
+        data = {'cart_count': cart_count}
+        return JsonResponse(data)
+    else:
+        cart_items = CartItem.objects.filter(cart__session_id = session_key(request))
+        cart_count = cart_items.count()
+        data = {'cart_count': cart_count}
+        return JsonResponse(data)
 
 

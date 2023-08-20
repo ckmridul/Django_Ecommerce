@@ -17,6 +17,11 @@
     
     <article class="card mb-4">
     <div class="card-body">
+        <div class="invoicelink text-right">
+            <a href="{% url 'download_invoice' order.uid %}" class="download-link">
+                <i class="fas fa-file-download"></i> Download Invoice
+            </a>
+        </div>
         <h4 class="card-title mb-4">Ordered items</h4>
         <div class="row">
             {% for orderproduct in orderItems %}

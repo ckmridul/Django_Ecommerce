@@ -10,8 +10,10 @@ from django.contrib.auth import update_session_auth_hash
 from order.models import Order
 from django.contrib.auth.decorators import login_required
 import json
-
+from base.session_key import session_key
 # Create your views here.
+
+
 
 def user_profile(request):
     
@@ -61,17 +63,11 @@ def change_password(request):
        
             
             
-def session_key(request):
-    session_key = request.session.session_key
-    if not session_key:
-        request.session.create()
-        session_key = request.session.session_key
-    return session_key
+
 
 
 
 def cart_view(request):
-    print('hi')
     if request.user.is_authenticated:
         cart, _ = Cart.objects.get_or_create(is_paid = False, user = request.user)
     else:
@@ -87,7 +83,7 @@ def cart_view(request):
     else:
         total = total_price
         coupon_price = 0
-    discount = sum(item.product.get_offer_price(item.variant) for item in cart_items)
+    discount = round(sum(item.product.get_offer_price(item.variant) for item in cart_items),2)
     total -= discount
     context = {'cart_items': cart_items,
                'total_price': total_price,
@@ -192,13 +188,16 @@ def remove_coupon(request):
     
     
     
-@login_required(login_url='/account')
 def make_order(request):
-    
-    user = request.user
-    cart = Cart.objects.get(user = user)
+    if request.user.is_authenticated:
+        user = request.user
+        cart = Cart.objects.get(user = user)
+        address = user.address.all()
+
+    else:
+        cart = Cart.objects.get(session_id = session_key(request))
+        address = Address.objects.filter(session_id = session_key(request))
     cart_items = cart.cart_items.all()
-    address = user.address.all()
     total_price = sum(item.get_total_price() for item in cart_items)
     
     if cart.coupon:
@@ -208,7 +207,7 @@ def make_order(request):
         total = total_price
         coupon_price = 0
         
-    discount = sum(item.product.get_offer_price(item.variant) for item in cart_items)
+    discount = round(sum(item.product.get_offer_price(item.variant) for item in cart_items),2)
     total -= discount
     
     context={'cart_items':cart_items,
@@ -222,7 +221,7 @@ def make_order(request):
     
     
 def add_address(request):
-    user = request.user
+    
     if request.method == 'POST':
         name = request.POST['name']
         phone = request.POST['phone']
@@ -239,19 +238,33 @@ def add_address(request):
             alternate_phone = None
         print(name)
         #save address
-        user_address = Address(
-            user = user,
-            name = name,
-            landmark = landmark,
-            city = city,
-            pincode = pincode,
-            state = state,
-            place = place,
-            address = address,
-            phone = phone,
-            alternate_number = alternate_phone
-        )
-        
+        if request.user.is_authenticated:
+            user = request.user
+            user_address = Address(
+                user = user,
+                name = name,
+                landmark = landmark,
+                city = city,
+                pincode = pincode,
+                state = state,
+                place = place,
+                address = address,
+                phone = phone,
+                alternate_number = alternate_phone
+            )
+        else:
+                user_address = Address(
+                session_id = session_key(request),
+                name = name,
+                landmark = landmark,
+                city = city,
+                pincode = pincode,
+                state = state,
+                place = place,
+                address = address,
+                phone = phone,
+                alternate_number = alternate_phone
+            )
         user_address.save()
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))

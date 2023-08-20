@@ -128,7 +128,7 @@
                             {% if not request.resolver_match.view_name == 'cart' %}
                             <div class="widget-header  mr-3">
                                 <a href="{% url 'cart' %}" class="icon icon-sm rounded-circle border"><i class="fa fa-shopping-cart"></i></a>
-                                <span class="badge badge-pill badge-danger notify">{{request.user.get_cart_count}}</span>
+                                <span id = "cart_qty" class="badge badge-pill badge-danger notify">{{request.user.get_cart_count}}</span>
                             </div>
                             {% endif %}
                             <div class="widget-header icontext">
@@ -220,6 +220,24 @@
                 $("#similar-products-list").empty();
             });
             });
+
+
+    $(document).ready(function() {
+        updateCartCounter();
+
+        function updateCartCounter() {
+            $.ajax({
+                url: "{% url 'cart_counter' %}", 
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    $('#cart_qty').text(data.cart_count);
+                }
+            });
+        }
+    });
+
+
         
 
       </script>
