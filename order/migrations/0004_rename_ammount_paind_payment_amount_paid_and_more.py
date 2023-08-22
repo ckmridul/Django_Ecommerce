@@ -5,7 +5,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("user", "0003_address_name"),
         ("order", "0003_order_orderproduct"),

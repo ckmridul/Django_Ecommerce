@@ -6,7 +6,6 @@ import uuid
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("product", "0008_rename_coupen_code_coupon_coupon_code"),
     ]

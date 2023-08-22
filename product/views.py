@@ -1,98 +1,105 @@
 from django.shortcuts import render
-from product.models import Product,ProductVariant
-from django.http import HttpResponseRedirect,JsonResponse
-from account.models import Cart,CartItem
+from product.models import Product, ProductVariant
+from django.http import HttpResponseRedirect, JsonResponse
+from account.models import Cart, CartItem
 from django.contrib import messages
-from user.models import Wishlist,Wishlistitem
+from user.models import Wishlist, Wishlistitem
+
 # Create your views here.
+
 
 def get_product(request, slug):
     try:
-        product = Product.objects.get(slug =slug)
+        product = Product.objects.get(slug=slug)
         variant = product.productVariant.first()
         p_offer = []
         c_offer = []
 
         if product.offer:
             p_price = variant.price - (variant.price * (product.offer.percentage / 100))
-            p_offer = [p_price,product.offer]
+            p_offer = [p_price, product.offer]
             print(p_price)
-            
+
         if product.category.offer:
-            c_price = variant.price - (variant.price * (product.category.offer.percentage / 100))
-            c_offer = [c_price,product.category.offer]
+            c_price = variant.price - (
+                variant.price * (product.category.offer.percentage / 100)
+            )
+            c_offer = [c_price, product.category.offer]
             print(c_price)
-            
+
         if p_offer and c_offer:
             if p_price == c_price:
                 price = p_offer
             else:
-                price = min(p_offer,c_offer) 
+                price = min(p_offer, c_offer)
         elif p_offer and not c_offer:
             price = p_offer
         elif not p_offer and c_offer:
             price = c_offer
         else:
-            price =None
+            price = None
         print(price)
-            
-        context = {'product' : product,
-                   'selected_ram': product.productVariant.first().ram,
-                   'selected_variant' : variant,
-                   'price': price
-                   }
-        
-        if request.GET.get('ram'):
-            
-            ram = request.GET.get('ram')
+
+        context = {
+            "product": product,
+            "selected_ram": product.productVariant.first().ram,
+            "selected_variant": variant,
+            "price": price,
+        }
+
+        if request.GET.get("ram"):
+            ram = request.GET.get("ram")
             print(ram)
             variant = product.get_variants_by_ram(ram)
             if product.offer:
-                p_price = variant.price - (variant.price * (product.offer.percentage / 100))
-                p_offer = [p_price,product.offer]
+                p_price = variant.price - (
+                    variant.price * (product.offer.percentage / 100)
+                )
+                p_offer = [p_price, product.offer]
                 print(p_price)
-            
+
             if product.category.offer:
-                c_price = variant.price - (variant.price * (product.category.offer.percentage / 100))
-                c_offer = [c_price,product.category.offer]
+                c_price = variant.price - (
+                    variant.price * (product.category.offer.percentage / 100)
+                )
+                c_offer = [c_price, product.category.offer]
                 print(c_price)
-                    
+
             if p_offer and c_offer:
                 if p_price != c_price:
-                    price = min(p_offer,c_offer)
+                    price = min(p_offer, c_offer)
                 else:
                     price = p_offer
-                    
+
             elif p_offer and not c_offer:
                 price = p_offer
             elif not p_offer and c_offer:
                 price = c_offer
             else:
-                price =None
+                price = None
             print(price)
-     
-            context['selected_ram'] = ram
-            context['selected_variant'] = variant
-            context['price'] = price
-            
-           
-        
-        
-        wishlist = Wishlist.objects.get(user = request.user)
-        wishlistitem = Wishlistitem.objects.filter(wishlist = wishlist, product = product, variant = context['selected_variant'])
+
+            context["selected_ram"] = ram
+            context["selected_variant"] = variant
+            context["price"] = price
+
+        wishlist = Wishlist.objects.get(user=request.user)
+        wishlistitem = Wishlistitem.objects.filter(
+            wishlist=wishlist, product=product, variant=context["selected_variant"]
+        )
         if wishlistitem:
-            context['wish'] = True
+            context["wish"] = True
             print
         else:
-            context['wish'] = False
-        return render(request, 'product/product.html', context)
-    
+            context["wish"] = False
+        return render(request, "product/product.html", context)
+
     except Exception as e:
         print(e)
-        
-        return render(request, 'product/product.html', context)
-    
-        
+
+        return render(request, "product/product.html", context)
+
+
 def session_key(request):
     session_key = request.session.session_key
     if not session_key:
@@ -101,33 +108,31 @@ def session_key(request):
     return session_key
 
 
-
 def add_to_cart(request, uid):
-   
     variant_id = uid
-    
+
     if request.user.is_authenticated:
         user = request.user
-        cart , _ = Cart.objects.get_or_create(user = user, is_paid = False)
+        cart, _ = Cart.objects.get_or_create(user=user, is_paid=False)
 
     else:
-        cart , _ = Cart.objects.get_or_create(session_id = session_key(request), is_paid = False)
-        
+        cart, _ = Cart.objects.get_or_create(
+            session_id=session_key(request), is_paid=False
+        )
+
     cart_items = cart.cart_items.all()
-    variant = ProductVariant.objects.get(uid = variant_id)
+    variant = ProductVariant.objects.get(uid=variant_id)
     product = variant.product
-    cart_item,created = CartItem.objects.get_or_create(cart=cart, product=product,variant=variant)
+    cart_item, created = CartItem.objects.get_or_create(
+        cart=cart, product=product, variant=variant
+    )
     if not created:
         if cart_item.quantity > variant.quantity:
-            messages.warning(request, 'out of stock')
+            messages.warning(request, "out of stock")
             return HttpResponseRedirect(request.path_info)
         cart_item.quantity += 1
         cart_item.save()
-        
-    cart_qty = cart_items.count()
-    data = {
-        'message': 'added succesfully',
-        'cart_qty': cart_qty
-    }
-    return JsonResponse(data)
 
+    cart_qty = cart_items.count()
+    data = {"message": "added succesfully", "cart_qty": cart_qty}
+    return JsonResponse(data)

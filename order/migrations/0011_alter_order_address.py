@@ -5,7 +5,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("user", "0004_wishlist_wishlistitem"),
         ("order", "0010_order_coupon_price_order_discount"),

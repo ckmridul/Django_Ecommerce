@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('product', '0003_alter_category_options_remove_product_price_and_more'),
+        ("product", "0003_alter_category_options_remove_product_price_and_more"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='productimage',
-            options={'ordering': ['image']},
+            name="productimage",
+            options={"ordering": ["image"]},
         ),
     ]

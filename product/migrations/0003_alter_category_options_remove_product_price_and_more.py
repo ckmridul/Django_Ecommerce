@@ -6,35 +6,49 @@ import uuid
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('product', '0002_remove_product_specs'),
+        ("product", "0002_remove_product_specs"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='category',
-            options={'verbose_name': 'category', 'verbose_name_plural': 'categories'},
+            name="category",
+            options={"verbose_name": "category", "verbose_name_plural": "categories"},
         ),
         migrations.RemoveField(
-            model_name='product',
-            name='price',
+            model_name="product",
+            name="price",
         ),
         migrations.CreateModel(
-            name='ProductVariant',
+            name="ProductVariant",
             fields=[
-                ('uid', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('quantity', models.IntegerField(default=0)),
-                ('price', models.IntegerField()),
-                ('color', models.CharField(max_length=10)),
-                ('ram', models.CharField(max_length=10)),
-                ('storeage', models.CharField(max_length=10)),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='productVariant', to='product.product')),
+                (
+                    "uid",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("quantity", models.IntegerField(default=0)),
+                ("price", models.IntegerField()),
+                ("color", models.CharField(max_length=10)),
+                ("ram", models.CharField(max_length=10)),
+                ("storeage", models.CharField(max_length=10)),
+                (
+                    "product",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="productVariant",
+                        to="product.product",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
     ]

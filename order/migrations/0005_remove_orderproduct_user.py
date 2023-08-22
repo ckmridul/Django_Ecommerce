@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("order", "0004_rename_ammount_paind_payment_amount_paid_and_more"),
     ]

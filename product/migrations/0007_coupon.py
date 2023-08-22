@@ -5,7 +5,6 @@ import uuid
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("product", "0006_rename_storeage_productvariant_storage"),
     ]

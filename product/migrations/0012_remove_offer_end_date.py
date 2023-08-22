@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("product", "0011_remove_offer_category_remove_offer_is_active_and_more"),
     ]

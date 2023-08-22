@@ -2,14 +2,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.contrib.auth import authenticate, login, logout
-from .models import Profile,Cart,CartItem
+from .models import Profile, Cart, CartItem
 import random
 from base.emails import send_account_activation_email
 
 
-
-
-            
 def session_key(request):
     session_key = request.session.session_key
     if not session_key:
@@ -18,17 +15,17 @@ def session_key(request):
     return session_key
 
 
-
-
 def login_page(request):
     if request.user.is_authenticated:
-        return redirect('/')
+        return redirect("/")
 
     if request.session.session_key:
-        cart_gust,_ = Cart.objects.get_or_create(session_id = request.session.session_key)
+        cart_gust, _ = Cart.objects.get_or_create(
+            session_id=request.session.session_key
+        )
     else:
         cart_gust = None
-    
+
     if request.method == "POST":
         email = request.POST.get("email")
         password = request.POST.get("password")
@@ -46,26 +43,28 @@ def login_page(request):
 
         if user_obj:
             login(request, user_obj)
-            
+
             if cart_gust:
-                cart,_ = Cart.objects.get_or_create(user = request.user)
+                cart, _ = Cart.objects.get_or_create(user=request.user)
                 gust_items = cart_gust.cart_items.all()
-                
+
                 for gust_item in gust_items:
-                    if CartItem.objects.filter(cart = cart, variant = gust_item.variant):
-                        print('working...')
-                        item = CartItem.objects.filter(cart = cart, variant = gust_item.variant).first()
+                    if CartItem.objects.filter(cart=cart, variant=gust_item.variant):
+                        print("working...")
+                        item = CartItem.objects.filter(
+                            cart=cart, variant=gust_item.variant
+                        ).first()
                         item.quantity += gust_item.quantity
                         item.save()
                     else:
                         gust_item.cart = cart
                         gust_item.save()
-                    
+
                 cart_gust.delete()
-            if request.GET.get('check_out'):
-                return redirect('cart')
+            if request.GET.get("check_out"):
+                return redirect("cart")
             return redirect("/")
-        messages.warning(request,'Password does not match')
+        messages.warning(request, "Password does not match")
 
     return render(request, "account/login.html")
 
@@ -80,20 +79,19 @@ def register(request):
         if get_otp:
             email = request.POST.get("email")
             user_obj = get_object_or_404(Profile, email=email)
-            session_otp = request.session.get('otp')
+            session_otp = request.session.get("otp")
             print(type(session_otp))
             print(get_otp)
             if session_otp == int(get_otp):
                 user_obj.is_email_verified = True
                 user_obj.save()
-                del request.session['otp']
+                del request.session["otp"]
                 return redirect("login_page")
-            
+
             context = {
                 "otp": True,
                 "message": messages.warning(request, "Invalid OTP"),
-                "email" :email
-               
+                "email": email,
             }
             return render(request, "account/register.html", context)
 
@@ -119,7 +117,7 @@ def register(request):
         user_obj.set_password(password)
         email_otp = random.randint(100000, 999999)
         print(email_otp)
-        request.session['otp'] = email_otp
+        request.session["otp"] = email_otp
         user_obj.save()
 
         send_account_activation_email(email, email_otp)
@@ -128,7 +126,7 @@ def register(request):
             "otp": True,
             "message": messages.success(request, "An email has been sent to your mail"),
             "name": first_name,
-            "email" :email
+            "email": email,
         }
 
         return render(request, "account/register.html", context)
@@ -149,9 +147,8 @@ def activate_email(request, email_otp):
 
 def admin_login(request):
     if request.user.is_authenticated:
-        return redirect('adminpanel')
+        return redirect("adminpanel")
 
-    
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
@@ -174,49 +171,47 @@ def admin_login(request):
 
     return render(request, "account/adminlogin.html")
 
+
 def logout_page(request):
     logout(request)
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-
+    return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
 
 
 def forgot_password(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
-            email = request.POST['email']
+            email = request.POST["email"]
             print(email)
         except:
             email = None
         try:
-            get_otp = request.POST['otp']
+            get_otp = request.POST["otp"]
         except:
             get_otp = None
         try:
-            pass1 = request.POST['pass1']
-            pass2 = request.POST['pass2']
+            pass1 = request.POST["pass1"]
+            pass2 = request.POST["pass2"]
         except:
             pass1 = None
             pass2 = None
-            
-            
+
         if get_otp:
-            session_otp = request.session.get('otp')
+            session_otp = request.session.get("otp")
             print(get_otp)
             if session_otp == int(get_otp):
-                del request.session['otp']
-                return render(request,'account/forgot_password.html',{'email':email})
-            
-            messages.warning(request,'Invalid Otp')
+                del request.session["otp"]
+                return render(request, "account/forgot_password.html", {"email": email})
+
+            messages.warning(request, "Invalid Otp")
             return HttpResponseRedirect(request.path_info)
         if pass1:
             if pass1 == pass2:
-                user_obj= Profile.objects.get(email=email)
+                user_obj = Profile.objects.get(email=email)
                 user_obj.set_password(pass1)
                 user_obj.save()
-                return redirect('login_page')
-            messages.warning(request,'password should match')
-        
-        
+                return redirect("login_page")
+            messages.warning(request, "password should match")
+
         if email:
             try:
                 user_obj = Profile.objects.get(email=email)
@@ -224,12 +219,14 @@ def forgot_password(request):
                 user_obj = None
             if user_obj:
                 email_otp = random.randint(100000, 999999)
-                request.session['otp'] = email_otp
+                request.session["otp"] = email_otp
                 send_account_activation_email(email, email_otp)
-                return render(request,'account/forgot_password.html',{'otp':True,'email':email})
-            messages.warning(request,'Invalid User')
+                return render(
+                    request,
+                    "account/forgot_password.html",
+                    {"otp": True, "email": email},
+                )
+            messages.warning(request, "Invalid User")
             return HttpResponseRedirect(request.path_info)
 
-            
-    return render(request,'account/forgot_password.html',{'em':True})
-    
+    return render(request, "account/forgot_password.html", {"em": True})
