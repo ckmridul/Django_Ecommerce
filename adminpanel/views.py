@@ -1,17 +1,23 @@
 import json
 from django.shortcuts import render,redirect
 from account.models import Profile
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.contrib import messages
 from product.models import Product,Brand,Category,Productimage,Offer,Coupon,ProductVariant
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_control,never_cache
 from .forms import ImageForm
 from django.core.paginator import Paginator
-from order.models import Order,OrderProduct
+from order.models import Order
 from django.db.models import Sum
 from django.utils import timezone
 from datetime import datetime, timedelta
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
+import io
+from openpyxl import Workbook
 
 # Create your views here.
 
@@ -32,7 +38,6 @@ def adminpanel(request):
         status = 'Delivered'
     ).aggregate(total = Sum('order_total'))['total']
     
-    print(revenue_year)
     
     revenue_month = Order.objects.filter(
         created_at__year = current_year,
@@ -100,7 +105,6 @@ def adminpanel(request):
             'revenue' : revenue_year,
             'category' : months
         }
-        print(data)
         return JsonResponse(data)
     
     if selected_value == 'year':
@@ -126,7 +130,6 @@ def adminpanel(request):
             'category' : year
     
         }
-        print(data)
         return JsonResponse(data)
     
     
@@ -225,17 +228,13 @@ def editcategory(request, uid):
         if request.POST['offer'] == "0":
             off = int(request.POST['offer'])
             offer_id = bool(off)
-            print(off,1)
-            print(offer_id,2)
+           
         else:
             offer_id = request.POST['offer']
-            print(offer_id,3)
         if offer_id:
             offer = Offer.objects.get(uid = offer_id)
-            print(offer,4)
         else:
             offer = None
-        print(offer,5)
         caterg.categories_image = image
         caterg.category_name = name
         caterg.offer = offer
@@ -264,7 +263,6 @@ def productview(request):
     product = Product.objects.all()
     catagory = Category.objects.all()
     brand = Brand.objects.all()
-    print(brand)
     offers = Offer.objects.all()
     
     paginator = Paginator(product,3)
@@ -405,9 +403,7 @@ def productimgage(request,uid):
 
 
 def addimage(request, uid):
-    print('gfg')
     if request.method == 'POST':
-        print('kjkj')
         form = ImageForm(request.POST, request.FILES)
         product = Product.objects.get(uid=uid)
 
@@ -466,9 +462,7 @@ def brand_edit(request,id):
     
     if request.method == 'POST':
         brand = Brand.objects.get(id=id)
-        print(brand.title,"ggg")
         name = request.POST['name']
-        print(name, 'hg')
         try:
             image = request.FILES.get('image')
             brand.title = name
@@ -595,10 +589,8 @@ def coupon(request):
 
 
 def edit_coupon(request,uid):
-    print('kjk')
     coupon = Coupon.objects.get(uid = uid)
     if request.method == 'POST':
-        print('jkk')
         code = request.POST['code']
         minimun = int(request.POST['minimum'])
         price = int(request.POST['price'])
@@ -606,7 +598,6 @@ def edit_coupon(request,uid):
         coupon.coupon_code = code
         coupon.minimum_amount = minimun
         coupon.discount_price = price
-        print('kl')
         coupon.save()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
@@ -672,3 +663,86 @@ def delete_variant(request,uid):
      
      
     
+    
+    
+def sales_report(request):
+    if request.method == 'POST':
+        start_date = request.POST['start_date']
+        end_date = request.POST['end_date']
+        format = request.POST['format']
+        if start_date != end_date:
+            orders = Order.objects.filter(status='Delivered', created_at__range=(start_date, end_date))
+        else:
+            orders = Order.objects.filter(status='Delivered', created_at__date = start_date)
+        
+        if format == 'pdf':
+            response = HttpResponse(content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename="sales_report.pdf"'
+            doc = SimpleDocTemplate(response, pagesize= A4)
+            table_style = TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ])
+            
+            data = [["Sl","Order Number", "User Email", "Payment Method", "Order Total", "Created Date"]]
+            counter = 1
+            for order in orders:
+                user_email = order.user.email if order.user else "Guest User"
+                created_date = order.created_at.strftime('%d-%m-%Y %I:%M %p')
+                data.append([
+                    counter,
+                    order.order_number,
+                    user_email,
+                    order.payment.payment_method,  
+                    order.order_total,
+                    created_date,
+                ])
+                counter += 1
+            table = Table(data)
+            table.setStyle(table_style)
+
+            # Build the PDF document
+            elements = []
+            styles = getSampleStyleSheet()
+            elements.append(Paragraph("Sales Report", styles['Title']))
+            elements.append(table)
+
+            doc.build(elements)
+
+            return response
+          
+        if format == 'excel':
+            output = io.BytesIO()
+            wb = Workbook()
+            ws = wb.active
+            headers = ["Sl", "Order Number", "User Email", "Payment Method", "Order Total", "Created Date"]
+            ws.append(headers)
+            
+            counter = 1
+            for order in orders:
+                user_email = order.user.email if order.user else "Guest User"
+                created_date = order.created_at.strftime('%d-%m-%Y %I:%M %p')
+                row_data = [
+                    counter,
+                    order.order_number,
+                    user_email,
+                    order.payment.payment_method,
+                    order.order_total,
+                    created_date,
+                ]
+                ws.append(row_data)
+                counter += 1
+                
+            wb.save(output)
+            output.seek(0)
+
+            # Create an HTTP response with the Excel file
+            response = HttpResponse(output.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = 'attachment; filename="sales_report.xlsx"'
+
+            return response

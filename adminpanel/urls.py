@@ -39,6 +39,8 @@ urlpatterns = [
     
     path('coupon/', views.coupon, name='coupon'),
     path('edit_coupon/<uuid:uid>/', views.edit_coupon, name='edit_coupon'),
-    path('delete_coupon/<uuid:uid>/',views.delete_coupon, name='delete_coupon')
+    path('delete_coupon/<uuid:uid>/',views.delete_coupon, name='delete_coupon'),
+    
+    path('sales_report/',views.sales_report, name="sales_report")
 
 ]

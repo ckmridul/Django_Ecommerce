@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from product.models import Product,Offer,Category
+from product.models import Product,Offer,Category,ProductVariant
 from django.http import JsonResponse
 from account.models import Cart,CartItem
 from base.session_key import session_key
@@ -40,7 +40,6 @@ def searched(request):
 
 
 def search_result(request):
-    # if request.method == 'POST':
     search = request.GET['searched']
     products = Product.objects.filter(product_name__icontains=search)
     context = {
@@ -51,8 +50,24 @@ def search_result(request):
         
         
 def shop(request):
-    
     product = Product.objects.filter(status = True)
+    if request.method == 'POST':
+        price = request.POST['price']
+        if price == "-20,000":
+            variant = ProductVariant.objects.filter(price__lt = 20000)
+            products = [item['product'] for item in variant.values('product')]
+            product = Product.objects.filter(uid__in = products, status =True).distinct()
+        elif price == "-50,000":
+            variant = ProductVariant.objects.filter(price__lt = 50000)
+            products = [item['product'] for item in variant.values('product')]
+            product = Product.objects.filter(uid__in = products, status =True).distinct()
+        elif price == "50,000+":
+            variant = ProductVariant.objects.filter(price__gt = 50000)
+            products = [item['product'] for item in variant.values('product')]
+            product = Product.objects.filter(uid__in = products, status =True).distinct()
+        else:
+            product = Product.objects.filter(status = True)
+
     context = {
         'products':product,
         'catagory_name': 'Shop',

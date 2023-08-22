@@ -275,24 +275,31 @@
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-              <form action="#" enctype="multipart/form-data" method="POST">
+              <form action="{% url 'sales_report' %}"  method="POST">
                   {% csrf_token %}
                   <div style="width: 100px;" class="">
                   </div>
                   <div class="form-outline mb-4">
                       <label class="form-label" for="form3Example3cg">Start Date</label>
                       <input name='start_date' value="" type="date" id="form3Example3cg"
-                          class="form-control form-control-lg" />
+                          class="form-control form-control-lg" required/>
                   </div>
                   <div class="form-outline mb-4">
                     <label class="form-label" for="form3Example3cg">End Date</label>
                     <input name='end_date'type="date" 
-                        class="form-control form-control-lg" />
+                        class="form-control form-control-lg" required/>
                 </div>
+                <div class="form-outline mb-4">
+                  <label class="form-label" for="form3Example3cg">Select format</label>
+                  <select class="form-select" name="format">
+                    <option value="pdf">PDF</option>
+                    <option value="excel">EXCEL</option>
+                </select>
+              </div>
 
                   <div class="d-flex justify-content-center">
-                      <button type="submit" class="btn btn-danger btn-lg gradient-custom-4 w-50 text-light"
-                          type="submit">Get Report </button>
+                      <button type="submit" id="download" data-bs-dismiss="modal" class="btn btn-danger btn-lg gradient-custom-4 w-50 text-light"
+                       type="submit">Get Report </button>
                   </div>
               </form>
           </div>
@@ -306,6 +313,12 @@
   
 
   <script>
+
+    {% comment %} const downloadLink = document.getElementById('download');
+    downloadLink.addEventListener('click', function(event) {
+      location.reload();
+    }); {% endcomment %}
+
     $(document).ready(function() {
       var defaultSelectedValue = "year";
       updateChart(defaultSelectedValue);
