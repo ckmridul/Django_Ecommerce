@@ -163,7 +163,7 @@ def place_order(request):
         
         return render(request,'product/payment.html', context)
     return redirect('make_order')
-    
+
 
 def order_complete(request):
     order_number = request.GET.get('order_number')
@@ -185,7 +185,7 @@ def order_complete(request):
     except(Payment.DoesNotExist, Order.DoesNotExist):
         return redirect('index')
     
-    
+
     
 def download_invoice(request, uid):
     order = Order.objects.get(uid=uid)

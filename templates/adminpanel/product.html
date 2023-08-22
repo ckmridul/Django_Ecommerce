@@ -3,13 +3,7 @@
 {% load static %}
 {% block content %}
 <section class="content-main">
-    <div class="content-header">
-        <div>
-            {% comment %} <h2 class="content-title card-title">User List</h2> {% endcomment %}
-            {% comment %} <p>All Users of Refined Radiance.</p> {% endcomment %}
-        </div>
-
-    </div>
+    
     <div class="card mb-4">
         
         <header class="card-header">
@@ -252,7 +246,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                {% comment %} {% url 'addproduct' %} {% endcomment %}
                 <form action="{% url 'addproduct' %}" enctype="multipart/form-data" method="POST">
                     {% csrf_token %}
                     <div style="width: 100px;" class="">
@@ -344,5 +337,9 @@
       
   </nav>
 </div>
+
+
+
+
 
 {% endblock %}

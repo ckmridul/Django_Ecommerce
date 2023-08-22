@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import render,redirect
 from account.models import Profile
 from django.http import HttpResponseRedirect, JsonResponse
@@ -8,15 +9,158 @@ from django.views.decorators.cache import cache_control,never_cache
 from .forms import ImageForm
 from django.core.paginator import Paginator
 from order.models import Order,OrderProduct
+from django.db.models import Sum
+from django.utils import timezone
+from datetime import datetime, timedelta
 
 # Create your views here.
 
 @cache_control(no_cache=True, must_revalidate=True,no_store=True)
 def adminpanel(request):
     if not request.user.is_superuser:
-        redirect('adminlogin')
+        return redirect('adminlogin')
     
-    return render(request,'adminpanel/dashboard.html')
+    selected_value = request.GET.get('selected_value')
+    current_date = timezone.now()
+    current_month = current_date.month
+    current_year = current_date.year
+    current_week = current_date.isocalendar()[1]
+    current_day = timezone.now().date()
+    user_type = []
+    revenue_year = Order.objects.filter(
+        created_at__year = current_year,
+        status = 'Delivered'
+    ).aggregate(total = Sum('order_total'))['total']
+    
+    print(revenue_year)
+    
+    revenue_month = Order.objects.filter(
+        created_at__year = current_year,
+        created_at__month = current_month,
+        status = 'Delivered'
+    ).aggregate(total_price_sum = Sum('order_total'))['total_price_sum']
+    
+    revenue_week = Order.objects.filter(
+        created_at__year = current_year,
+        created_at__month = current_month,
+        created_at__week = current_week,
+        status = 'Delivered'
+    ).aggregate(total_price_sum = Sum('order_total'))['total_price_sum']
+    
+    
+    revenue_day = Order.objects.filter(
+        created_at__date = current_day,
+        status = 'Delivered'
+    ).aggregate(total_price_sum = Sum('order_total'))['total_price_sum']
+    
+    gust_count = Order.objects.filter(
+        user__isnull = True,
+        is_orderd = True
+    ).count()
+    
+    user_type.append(gust_count)
+    
+    user_count = Order.objects.filter(
+        user__isnull = False,
+        is_orderd = True
+    ).count()
+    user_type.append(user_count)
+    
+    if selected_value =='month':
+        # for chart 
+        # Create a list to hold total prices for each month
+        monthly_total_prices = []
+        previous = []
+        months = ['Jan','Feb','Mar', 'Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+        # Iterate through each month (from January to December)
+        for month_number in range(1, 13):
+            total_price_curr = Order.objects.filter(
+                created_at__month=month_number,
+                status='Delivered',
+                created_at__year=current_year
+            ).aggregate(total_price_sum=Sum('order_total'))['total_price_sum'] or 0
+            
+            total_price_pre = Order.objects.filter(
+                created_at__month=month_number,
+                status='Delivered',
+                created_at__year=(current_year -1)
+            ).aggregate(total_price_sum=Sum('order_total'))['total_price_sum'] or 0
+        
+            total_price_float_curr = float(total_price_curr)
+            monthly_total_prices.append(total_price_float_curr / 1000)
+            
+            total_price_float_pre = float(total_price_pre)
+            previous.append(total_price_float_pre / 1000)
+        
+        data = {
+            'current':monthly_total_prices,
+            'previous' : previous,
+            'previousstr' :'previous year',
+            'currentstr' : 'current year',
+            'revenue' : revenue_year,
+            'category' : months
+        }
+        print(data)
+        return JsonResponse(data)
+    
+    if selected_value == 'year':
+        yearly_total_prices = []
+        year = [(current_year-10) +i  for i in range(11)]
+        
+        for year_number in year:
+            total_price_curr = Order.objects.filter(
+                created_at__year = year_number,
+                status='Delivered',
+            ).aggregate(total_price_sum=Sum('order_total'))['total_price_sum'] or 0
+            
+            total_price_float_curr = float(total_price_curr)
+            yearly_total_prices.append(total_price_float_curr / 1000)
+            
+           
+        data = {
+            'current':yearly_total_prices,
+            'previous' : None,
+            'previousstr' :None,
+            'currentstr' : 'current week',
+            'revenue' : revenue_month,
+            'category' : year
+    
+        }
+        print(data)
+        return JsonResponse(data)
+    
+    
+    
+    current_date = datetime.now()
+    start_date = current_date - timedelta(days=14)
+    daily_total = []
+    
+    while start_date <= current_date:
+        daily_total_price = Order.objects.filter(
+        created_at__date=start_date,
+        status='Delivered'
+        ).aggregate(total_price_sum=Sum('order_total'))['total_price_sum'] or 0
+    
+        daily_total_price_float = float(daily_total_price)
+        daily_total.append(daily_total_price_float)
+    
+        start_date += timedelta(days=1)
+    
+    month = current_date.strftime('%b')
+    
+    monthly = json.dumps(daily_total)
+    total_order = Order.objects.filter(is_orderd = True).count()
+    user_type_json = json.dumps(user_type)
+    context = {
+        'user_type' : user_type_json,
+        'total_order':total_order,
+        'monthly' : monthly,
+        'revenue_month' :round(revenue_month,2),
+        'current_month' :month
+       
+    }
+        
+    return render(request,'adminpanel/dashboard.html',context)
 
 
 
@@ -261,8 +405,9 @@ def productimgage(request,uid):
 
 
 def addimage(request, uid):
-    
+    print('gfg')
     if request.method == 'POST':
+        print('kjkj')
         form = ImageForm(request.POST, request.FILES)
         product = Product.objects.get(uid=uid)
 
@@ -376,8 +521,7 @@ def change_order_status(request,uid):
         status = request.POST.get('status')
         order.status = status
         order.save()
-    return redirect('orderManegement')
-
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
 
@@ -526,3 +670,5 @@ def delete_variant(request,uid):
     ProductVariant.objects.get(uid = uid).delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
      
+     
+    

@@ -1,4 +1,4 @@
-
+console.log('hello world')
 const imgIdInput = document.getElementById('img_id'); // Assuming you have a hidden input field in your template with the image ID
 const imgId = imgIdInput.value;
 const alertBox = document.getElementById('alert-box')
@@ -7,6 +7,7 @@ const imageForm = document.getElementById('image-form')
 const confirmBtn = document.getElementById('confirm-btn')
 const input = document.getElementById('id_image')
 const csrf = document.getElementsByName('csrfmiddlewaretoken')
+
 
 
 input.addEventListener('change', ()=>{
@@ -36,11 +37,11 @@ input.addEventListener('change', ()=>{
     var cropper = $image.data('cropper');
     confirmBtn.addEventListener('click', ()=>{
         cropper.getCroppedCanvas().toBlob((blob) => {
-            console.log('confirmed')
             const fd = new FormData();
             fd.append('csrfmiddlewaretoken', csrf[0].value)
             fd.append('image', blob, 'my-image.png');
-
+            
+            console.log('confirmed')
             $.ajax({
                 type:'POST',
                 url: imageForm.action,
@@ -54,15 +55,15 @@ input.addEventListener('change', ()=>{
                                         window.location.href = `http://127.0.0.1:8000/adminpanel/image/${imgId}`;
                 },
                 
-                // error: function(error){
-                //     console.log('error', error)
-                //     alertBox.innerHTML = `<div class="alert alert-danger" role="alert">
-                //                             Ups...something went wrong
-                //                         </div>`
-                // },
-                // cache: false,
-                // contentType: false,
-                // processData: false,
+                error: function(error){
+                     console.log('error', error)
+                     alertBox.innerHTML = `<div class="alert alert-danger" role="alert">
+                                             Ups...something went wrong
+                                         </div>`
+                 },
+                 cache: false,
+                 contentType: false,
+                 processData: false,
             })
         })
     })

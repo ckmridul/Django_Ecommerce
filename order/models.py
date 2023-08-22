@@ -37,8 +37,8 @@ class Order(BaseModel):
     status = models.CharField(max_length=15, choices=status_choice, default='Order Pending')
     is_orderd = models.BooleanField(default=False)
     
-    def __str__(self):
-        return self.user.first_name
+    # def __str__(self):
+    #     return self.user.first_name
     class Meta:
         ordering = ['-created_at']
     
