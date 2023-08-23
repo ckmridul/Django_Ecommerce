@@ -13,7 +13,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
-from decouple import config
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,10 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', cast=bool)
+DEBUG = os.getenv('DEBUG', cast=bool)
 
 ALLOWED_HOSTS = []
 
@@ -135,15 +137,15 @@ MEDIA_URL = "/media/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-EMAIL_BAKEND = config('EMAIL_BAKEND')
-EMAIL_HOST = config('EMAIL_HOST')
-EMAIL_USE_TLS = config('EMAIL_USE_TLS',cast=bool)
-EMAIL_PORT = config('EMAIL_PORT', cast=int)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_BAKEND = os.getenv('EMAIL_BAKEND')
+EMAIL_HOST = os.getenvig('EMAIL_HOST')
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS',cast=bool)
+EMAIL_PORT = os.getenv('EMAIL_PORT', cast=int)
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
-AUTH_USER_MODEL = config('AUTH_USER_MODEL')
+AUTH_USER_MODEL = os.getenv('AUTH_USER_MODEL')
 
 
-KEY = config('KEY')
-SECRET = config('SECRET')
+KEY = os.getenv('KEY')
+SECRET = os.getenv('SECRET')
