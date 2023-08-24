@@ -53,6 +53,9 @@ class Product(BaseModel):
     )
     status = models.BooleanField(default=True)
     offer = models.ForeignKey(Offer, on_delete=models.SET_NULL, blank=True, null=True)
+    
+    class Meta:
+        ordering = ["-created_at"]
 
     def save(self, *args, **kwargs):
         if not self.slug:

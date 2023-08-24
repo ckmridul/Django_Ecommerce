@@ -159,7 +159,7 @@
                                         <div class="modal-footer">
                                             <!-- one here -->
                                             
-                                            <a href="{% url 'delete_catagory' %}" class="btn btn-warning">Delete</a>
+                                            <a href="{% url 'delete_catagory' c.uid %}" class="btn btn-warning">Delete</a>
                                             <button type="button" class="btn btn-secondary"
                                                 data-bs-dismiss="modal">Close</button>
                                         </div>
@@ -193,30 +193,30 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                {% comment %} {% url 'add_category' %} {% endcomment %}
-                <form action="#" enctype="multipart/form-data" method="POST">
+              
+                <form action="{% url 'add_category' %}" enctype="multipart/form-data" method="POST">
                     {% csrf_token %}
                     <div style="width: 100px;" class="">
                     </div>
                     <div class="form-outline mb-4">
                         <label class="form-label" for="form3Example3cg">Name</label>
-                        <input name='categories' value="" type="text" id="form3Example3cg"
-                            class="form-control form-control-lg" />
+                        <input name='category_name' value="" type="text" id="form3Example3cg"
+                            class="form-control form-control-lg" required/>
                     </div>
 
                     <div class="form-outline mb-4">
                         <label class="form-label" for="form3Example3cg">Image</label>
                         <input name="image" type="file" accept="image/png, image/jpeg, image/svg, image/avif"
-                            class="form-control" id="image-input" />
+                            class="form-control" id="image-input" required/>
                         <small id="image-error" class="text-danger text-center"></small>
                     </div>
 
-                   <div class="form-outline mb-4">
+                    <div class="form-outline mb-4">
                         <label class="form-label" for="form3Example3cg">Offer</label>
                         <select class="form-select" name="offer">
                             <option value="{{null}}">No offer</option>
                             {% for offer in offers %}
-                                {% if offer.name == pdt.offer.name %}
+                                {% if offer.name == c.offer.name %}
                                   <option value="{{ offer.uid }}" selected>{{ offer.name }} - {{offer.percentage}}%</option> 
                                 {% else %}
                                     <option value="{{ offer.uid }}">{{ offer.name }}  - {{offer.percentage}}%</option>

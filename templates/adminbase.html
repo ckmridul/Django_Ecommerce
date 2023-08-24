@@ -193,11 +193,7 @@
           </ul>
 
           <ul class="navbar-nav">
-            {% for message in messages %}
-            <div class="message text-center {% if message.tags %}{{ message.tags }}{% endif %}">
-              {{ message }}
-            </div>
-            {% endfor %}
+            {% include 'alert.html' %}
           </ul>
 
           <div class="navbar-collapse justify-content-end px-0" id="navbarNav">

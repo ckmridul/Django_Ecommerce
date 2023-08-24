@@ -218,6 +218,32 @@ def catagoryManage(request):
     return render(request, "adminpanel/category.html", context)
 
 
+
+def add_category(request):
+    if request.method == "POST":
+        name = request.POST["category_name"]
+        image = request.FILES.get("image")
+        cat = Category.objects.filter(category_name = name)
+        if cat:
+            messages.warning(request, "category name already exists")
+            return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
+        
+        if request.POST["offer"] == "0":
+            off = int(request.POST["offer"])
+            offer_id = bool(off)
+
+        else:
+            offer_id = request.POST["offer"]
+        if offer_id:
+            offer = Offer.objects.get(uid=offer_id)
+        else:
+            offer = None
+            
+        Category.objects.create(category_name = name, category_image=image, offer = offer)
+        
+    return redirect("catagory")
+
+
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required(login_url="adminlogin")
 def editcategory(request, uid):
@@ -230,6 +256,11 @@ def editcategory(request, uid):
 
         except:
             image = None
+            
+        cat = Category.objects.filter(category_name = name)
+        if cat:
+            messages.warning(request, "category name already exists")
+            return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
 
         if request.POST["offer"] == "0":
             off = int(request.POST["offer"])
@@ -241,7 +272,8 @@ def editcategory(request, uid):
             offer = Offer.objects.get(uid=offer_id)
         else:
             offer = None
-        caterg.categories_image = image
+        if image:
+            caterg.category_image = image
         caterg.category_name = name
         caterg.offer = offer
         caterg.save()
@@ -249,10 +281,10 @@ def editcategory(request, uid):
         return redirect("catagory")
 
 
-def delete_catagory(request, uid):
-    catagory = Category.objects.get(uid=uid)
+def delete_catagory(request,uid):
+    catagory = Category.objects.get(uid = uid)
     catagory.delete()
-    return HttpResponseRedirect(request.path_info)
+    return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
 
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -287,6 +319,10 @@ def product_edit(request, uid):
         brand = request.POST["brand"]
         category_id = request.POST.get("category")
         product_description = request.POST.get("product_description")
+        pro = Product.objects.filter(product_name = name)
+        if pro:
+            messages.warning(request, "category name already exists")
+            return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
 
         if request.POST["offer"] == "0":
             off = int(request.POST["offer"])
@@ -323,6 +359,12 @@ def addproduct(request):
         brand = request.POST["brand"]
         category_id = request.POST.get("category")
         product_description = request.POST.get("product_description")
+        
+        pro = Product.objects.filter(product_name = name)
+        if pro:
+            messages.warning(request, "category name already exists")
+            return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
+        
         if request.POST["offer"] == "0":
             off = int(request.POST["offer"])
             offer_id = bool(off)
