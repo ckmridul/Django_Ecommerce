@@ -50,7 +50,7 @@ def adminpanel(request):
         created_at__year=current_year,
         created_at__month=current_month,
         status="Delivered",
-    ).aggregate(total_price_sum=Sum("order_total"))["total_price_sum"]
+    ).aggregate(total_price_sum=Sum("order_total"))["total_price_sum"] or 0
 
     revenue_week = Order.objects.filter(
         created_at__year=current_year,

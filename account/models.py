@@ -7,7 +7,7 @@ from product.models import Product, ProductVariant, Coupon
 
 
 class Profile(AbstractUser):
-    phone = models.IntegerField(null=True, blank=True)
+    phone = models.BigIntegerField(null=True, blank=True)
     is_email_verified = models.BooleanField(default=False)
     profile_image = models.ImageField(upload_to="profile")
 
